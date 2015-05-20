@@ -1,4 +1,3 @@
-
 (* Demonstrate the concurrent scheduler *)
 
 let log = Printf.printf
