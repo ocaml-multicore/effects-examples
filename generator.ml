@@ -93,7 +93,7 @@ let benchmark f n =
   let r = run [] n in
   get_mean_sd r
 
-let t = Tree.deep 20
+let t = Tree.deep 25
 
 let iter_fun () = Tree.to_iter t (fun _ -> ())
 let (m,sd) = benchmark iter_fun 5
