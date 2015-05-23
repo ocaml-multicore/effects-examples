@@ -1,6 +1,6 @@
 open Printf
 
-type bottom = ..
+type bottom
 
 module type TXN = sig
   type 'a t
@@ -8,31 +8,27 @@ module type TXN = sig
   val ref : 'a -> 'a t
   val (!) : 'a t -> 'a
   val (:=) : 'a t -> 'a -> unit
-  val abort : exn -> bottom
 end
 
 module Txn : TXN = struct
   type 'a t = 'a ref
 
   effect Update : 'a t * 'a -> unit
-  effect Abort : exn -> bottom
-
-  let ref = ref
 
   let atomically f =
     let comp =
       match f () with
       | x -> (fun _ -> x)
-      | effect (Abort x) k -> (fun rb -> rb (); raise x)
+      | exception e -> (fun rb -> rb (); raise e)
       | effect (Update (r,v)) k -> (fun rb ->
           let old_v = !r in
           r := v;
           continue k () (fun () -> r := old_v; rb ()))
     in comp (fun () -> ())
 
+  let ref = ref
   let (!) = (!)
   let (:=) = fun r v -> perform (Update (r,v))
-  let abort v = perform (Abort v)
 end
 
 exception Res of int
@@ -46,7 +42,7 @@ let () = atomically (fun () ->
     r := 20;
     r := 21;
     printf "T1: Before abort %d\n" (!r);
-    ignore (abort (Res !r));
+    raise (Res !r);
     printf "T1: After abort %d\n" (!r);
     r := 30)
   with
