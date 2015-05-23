@@ -30,11 +30,11 @@ module IntState = State (struct type t = int end)
 
 open IntState
 
-let foo () =
+let foo () : unit =
   printf "%d\n" (get ());
   put 42;
   printf "%d\n" (get ());
   put 21;
   printf "%d\n" (get ())
 
-let () = run foo 0
+let _ = run foo 0

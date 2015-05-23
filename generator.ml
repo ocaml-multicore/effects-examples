@@ -108,10 +108,10 @@ let gen_cps_fun () =
   let f = Tree.to_gen_cps t in
   consume_all f
 let (m,sd) = benchmark gen_cps_fun 5
-let () = printf "Gen: mean = %f, sd = %f\n" m sd
+let () = printf "Gen_cps: mean = %f, sd = %f\n" m sd
 
 let gen_fun () =
   let f = Tree.to_gen t in
   consume_all f
 let (m, sd) = benchmark gen_fun 5
-let () = printf "Iter: mean = %f, sd = %f\n" m sd
+let () = printf "Gen_eff: mean = %f, sd = %f\n" m sd
