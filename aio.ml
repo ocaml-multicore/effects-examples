@@ -37,6 +37,7 @@ module type AIO = sig
   val accept : file_descr -> file_descr * sockaddr
   val recv   : file_descr -> bytes -> int -> int -> msg_flag list -> int
   val send   : file_descr -> bytes -> int -> int -> msg_flag list -> int
+  val sleep  : float -> unit
 
   val run : (unit -> unit) -> unit
 end
@@ -55,6 +56,8 @@ module Aio : AIO = struct
   effect Blk_read  : file_descr -> unit
   (** Block until socket is writable. *)
   effect Blk_write : file_descr -> unit
+  (** Sleep for given number of seconds. *)
+  effect Sleep : float -> unit
 
   (** Poll to see if the file descriptor is available to read. *)
   let poll_rd fd =
@@ -78,24 +81,50 @@ module Aio : AIO = struct
     let read_ht = Hashtbl.create 13 in
     (* Represents the threads that are waiting for write to complete *)
     let write_ht = Hashtbl.create 13 in
+    (* Represents the threads that are sleeping. *)
+    let sleep_ht = Hashtbl.create 13 in
 
     let enqueue k = Queue.push k run_q in
+
+    (* Wakes up sleeping threads.
+     *
+     * Returns [(t,b)] where [t] is the eariest time in the future when a thread
+     * needs to wake up, and [b] is true is some thread is woken up.
+     *)
+    let wakeup now : bool * float =
+      let (l,w,n) = Hashtbl.fold (fun t k (l, w, next) ->
+        if t <= now then
+          (enqueue k; (t::l, true, next))
+        else if t < next then
+          (l, w, t)
+        else (l, w, next)) sleep_ht ([], false, max_float)
+      in
+      List.iter (fun t -> Hashtbl.remove sleep_ht t) l;
+      (w,n)
+    in
+
     let rec dequeue () =
       if Queue.is_empty run_q then (* No runnable threads *)
         if Hashtbl.length read_ht = 0 &&
-           Hashtbl.length write_ht = 0 then () (* We are done. *)
-        else perform_io ()
+           Hashtbl.length write_ht = 0 &&
+           Hashtbl.length sleep_ht = 0 then () (* We are done. *)
+        else
+          let now = Unix.gettimeofday () in
+          let (thrd_has_woken_up, next_wakeup_time) = wakeup now in
+          if thrd_has_woken_up then
+            dequeue ()
+          else if next_wakeup_time = max_float then
+            perform_io (-1.)
+          else perform_io (next_wakeup_time -. now)
       else (* Still have runnable threads *)
         continue (Queue.pop run_q) ()
 
     (* When there are no threads to run, perform blocking io. *)
-    and perform_io () =
-      (* This implemetation is thread-safe. If two threads concurrently wait to
-       * read or write on the same socket, both requests will be correctly
-       * handled. Hashtbl is multivalued. *)
+    and perform_io timeout =
+      (* Hashtbl is multivalue ==> thread-safety! *)
       let rd_fds = Hashtbl.fold (fun fd _ acc -> fd::acc) read_ht [] in
       let wr_fds = Hashtbl.fold (fun fd _ acc -> fd::acc) write_ht [] in
-      let rdy_rd_fds, rdy_wr_fds, _ = Unix.select rd_fds wr_fds [] (-1.) in
+      let rdy_rd_fds, rdy_wr_fds, _ = Unix.select rd_fds wr_fds [] timeout in
       (* let _ = printf "%d;%d\n%!" (List.length rdy_rd_fds) (List.length * rdy_wr_fds) in *)
       let rec resume ht = function
       | [] -> ()
@@ -106,6 +135,7 @@ module Aio : AIO = struct
       in
       resume read_ht rdy_rd_fds;
       resume write_ht rdy_wr_fds;
+      if timeout > 0. then ignore (wakeup (Unix.gettimeofday ())) else ();
       dequeue ()
     in
     let rec core f =
@@ -126,6 +156,10 @@ module Aio : AIO = struct
           if poll_wr fd then continue k ()
           else (Hashtbl.add write_ht fd k;
                 dequeue ())
+      | effect (Sleep t) k ->
+          if t <= 0. then continue k ()
+          else (Hashtbl.add sleep_ht (Unix.gettimeofday () +. t) k;
+                dequeue ())
     in
     core main
 
@@ -145,6 +179,7 @@ module Aio : AIO = struct
     perform (Blk_write fd);
     Unix.send fd bus pos len mode
 
+  let sleep t = perform (Sleep t)
 end
 
 let send sock str =
