@@ -43,6 +43,11 @@ module type STATE = sig
   val run  : (unit -> 'a) -> 'a
 end
 
+let rec find : 'a 'b. ('a -> 'b option) -> 'a list -> 'b option =
+  fun f l -> match l with
+      [] -> None
+    | x :: xs -> match f x with None -> find f xs | s -> s
+
 module State : STATE = struct
 
   type 'a t = {inj : 'a -> Univ.t; prj : Univ.t -> 'a option}
@@ -67,17 +72,9 @@ module State : STATE = struct
           let cont = continue k {inj;prj} in
           cont (inj v::s))
       | effect (Read {inj; prj}) k -> (fun s ->
-        try
-          let () = List.iter (fun v ->
-            match prj v with
-            | None -> ()
-            | Some _ -> raise (Found v)) s
-          in failwith "Ref.run: Impossible -> ref not found"
-        with
-        | Found v ->
-            match prj v with
-            | Some v -> continue k v s
-            | None -> failwith "Ref.run: Impossible")
+          match find prj s with
+          | Some v -> continue k v s
+          | None -> failwith "Ref.run: Impossible -> ref not found")
       | effect (Write ({inj; prj}, v)) k -> (fun s ->
           continue k () (inj v::s))
     in comp []
