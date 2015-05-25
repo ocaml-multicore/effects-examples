@@ -15,5 +15,8 @@ ref: ref.ml
 transaction: transaction.ml
 	ocamlc -o transaction transaction.ml
 
+aio: aio.ml
+	ocamlc -o aio unix.cma aio.ml
+
 clean:
-	rm -f *.cmi *.cmo *.o concurrent generator *~ a.out state ref transaction
+	rm -f *.cmi *.cmo *.o concurrent generator *~ a.out state ref transaction aio
