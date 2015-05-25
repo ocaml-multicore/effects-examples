@@ -132,29 +132,29 @@ module Aio : AIO = struct
 end
 
 let send sock str =
-	let len = String.length str in
-	let total = ref 0 in
-	(	try
-			while !total < len do
-				let write_count = Aio.send sock str !total (len - !total) [] in
-				total := write_count + !total
-				done
-		with _ -> ()
-		) ;
-	!total
+  let len = String.length str in
+  let total = ref 0 in
+  (try
+      while !total < len do
+        let write_count = Aio.send sock str !total (len - !total) [] in
+        total := write_count + !total
+        done
+    with _ -> ()
+    );
+  !total
 
 let recv sock maxlen =
-	let str = Bytes.create maxlen in
-	let recvlen =
-		try Aio.recv sock str 0 maxlen []
-		with _ -> 0
-	in
-	String.sub str 0 recvlen
+  let str = Bytes.create maxlen in
+  let recvlen =
+    try Aio.recv sock str 0 maxlen []
+    with _ -> 0
+  in
+  String.sub str 0 recvlen
 
 let close sock =
-	try Unix.shutdown sock Unix.SHUTDOWN_ALL
-	with _ -> () ;
-	Unix.close sock
+  try Unix.shutdown sock Unix.SHUTDOWN_ALL
+  with _ -> () ;
+  Unix.close sock
 
 let string_of_sockaddr = function
   | ADDR_UNIX s -> s
@@ -174,14 +174,14 @@ let rec echo_server sock addr =
 
 let server () =
   (* Server listens on localhost at 9301 *)
-	let addr, port = Unix.inet_addr_loopback, 9301 in
-	printf "Echo server listening on 127.0.0.1:%d\n%!" port;
-	let saddr = Unix.ADDR_INET (addr, port) in
-	let ssock = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
-	(* SO_REUSEADDR so we can restart the server quickly. *)
-	Unix.setsockopt ssock Unix.SO_REUSEADDR true;
-	Unix.bind ssock saddr;
-	Unix.listen ssock 20;
+  let addr, port = Unix.inet_addr_loopback, 9301 in
+  printf "Echo server listening on 127.0.0.1:%d\n%!" port;
+  let saddr = Unix.ADDR_INET (addr, port) in
+  let ssock = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
+  (* SO_REUSEADDR so we can restart the server quickly. *)
+  Unix.setsockopt ssock Unix.SO_REUSEADDR true;
+  Unix.bind ssock saddr;
+  Unix.listen ssock 20;
   (* Socket is non-blocking *)
   Unix.set_nonblock ssock;
   while true do
