@@ -81,12 +81,14 @@ module Aio : AIO = struct
 
     let enqueue k = Queue.push k run_q in
     let rec dequeue () =
-      if Queue.is_empty run_q then
+      if Queue.is_empty run_q then (* No runnable threads *)
         if Hashtbl.length read_ht = 0 &&
            Hashtbl.length write_ht = 0 then () (* We are done. *)
         else perform_io ()
       else (* Still have runnable threads *)
         continue (Queue.pop run_q) ()
+
+    (* When there are no threads to run, perform blocking io. *)
     and perform_io () =
       (* This implemetation is thread-safe. If two threads concurrently wait to
        * read or write on the same socket, both requests will be correctly
@@ -175,6 +177,7 @@ let string_of_sockaddr = function
   | Unix.ADDR_INET (inet,port) ->
       (Unix.string_of_inet_addr inet) ^ ":" ^ (string_of_int port)
 
+(* Repeat what the client says until the client goes away. *)
 let rec echo_server sock addr =
   try
     let data = recv sock 1024 in
@@ -201,6 +204,7 @@ let server () =
   (* Socket is non-blocking *)
   Unix.set_nonblock ssock;
   try
+    (* Wait for clients, and fork off echo servers. *)
     while true do
       let client_sock, client_addr = Aio.accept ssock in
       let cn = string_of_sockaddr client_addr in
