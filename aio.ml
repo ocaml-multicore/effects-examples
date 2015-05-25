@@ -17,6 +17,14 @@
 open Printexc
 open Printf
 
+
+(* Asynchronous IO library.
+ *
+ * For each blocking action, if the action can be performed immediately, then it
+ * is. Otherwise, the thread performing the blocking task is suspended and
+ * automatically wakes up then the action completes. The suspend/resume is
+ * transparent to the programmer.
+ *)
 module type AIO = sig
 
   val fork  : (unit -> unit) -> unit
@@ -86,6 +94,7 @@ module Aio : AIO = struct
       let rd_fds = Hashtbl.fold (fun fd _ acc -> fd::acc) read_ht [] in
       let wr_fds = Hashtbl.fold (fun fd _ acc -> fd::acc) write_ht [] in
       let rdy_rd_fds, rdy_wr_fds, _ = Unix.select rd_fds wr_fds [] (-1.) in
+      (* let _ = printf "%d;%d\n%!" (List.length rdy_rd_fds) (List.length * rdy_wr_fds) in *)
       let rec resume ht = function
       | [] -> ()
       | x::xs ->
@@ -119,16 +128,21 @@ module Aio : AIO = struct
     core main
 
   let fork f = perform (Fork f)
+
   let yield () = perform Yield
+
   let accept fd =
     perform (Blk_read fd);
     Unix.accept fd
+
   let recv fd buf pos len mode =
     perform (Blk_read fd);
     Unix.recv fd buf pos len mode
+
   let send fd bus pos len mode =
     perform (Blk_write fd);
     Unix.send fd bus pos len mode
+
 end
 
 let send sock str =
@@ -157,17 +171,19 @@ let close sock =
   Unix.close sock
 
 let string_of_sockaddr = function
-  | ADDR_UNIX s -> s
-  | ADDR_INET inet,port -> Unix.string_of_inet_addr inet ^ (string_of_int port)
+  | Unix.ADDR_UNIX s -> s
+  | Unix.ADDR_INET (inet,port) ->
+      (Unix.string_of_inet_addr inet) ^ ":" ^ (string_of_int port)
 
 let rec echo_server sock addr =
   try
     let data = recv sock 1024 in
     if String.length data > 0 then
       (ignore (send sock data);
-       echo_server sock)
+       echo_server sock addr)
     else
-      (printf "echo_server : client disconnect.\n%!";
+      let cn = string_of_sockaddr addr in
+      (printf "echo_server : client (%s) disconnected.\n%!" cn;
        close sock)
   with
   | _ -> close sock
@@ -184,11 +200,15 @@ let server () =
   Unix.listen ssock 20;
   (* Socket is non-blocking *)
   Unix.set_nonblock ssock;
-  while true do
-    let client_sock, client_addr = Aio.accept ssock in
-    Unix.set_nonblock client_sock;
-    Aio.fork (fun () -> echo_server client_sock client_addr)
-  done
+  try
+    while true do
+      let client_sock, client_addr = Aio.accept ssock in
+      let cn = string_of_sockaddr client_addr in
+      printf "server : client (%s) connected.\n%!" cn;
+      Unix.set_nonblock client_sock;
+      Aio.fork (fun () -> echo_server client_sock client_addr)
+    done
+  with
   | _ -> close ssock
 
 let () = Aio.run server

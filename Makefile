@@ -1,4 +1,4 @@
-all: concurrent generator state ref transaction
+all: concurrent generator state ref transaction aio
 
 concurrent: sched.mli sched.ml concurrent.ml
 	ocamlc -o concurrent sched.mli sched.ml concurrent.ml
