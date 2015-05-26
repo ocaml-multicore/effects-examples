@@ -26,15 +26,18 @@ module State (S : sig type t end) : STATE with type t = S.t = struct
     in comp init
 end
 
-module IntState = State (struct type t = int end)
-
-open IntState
+module IS = State (struct type t = int end)
+module SS = State (struct type t = string end)
 
 let foo () : unit =
-  printf "%d\n" (get ());
-  put 42;
-  printf "%d\n" (get ());
-  put 21;
-  printf "%d\n" (get ())
+  printf "%d\n" (IS.get ());
+  IS.put 42;
+  printf "%d\n" (IS.get ());
+  IS.put 21;
+  printf "%d\n" (IS.get ());
+  SS.put "hello";
+  printf "%s\n" (SS.get ());
+  SS.put "world";
+  printf "%s\n" (SS.get ())
 
-let _ = run foo 0
+let _ = IS.run (fun () -> SS.run foo "") 0
