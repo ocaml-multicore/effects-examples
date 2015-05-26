@@ -1,17 +1,32 @@
 (* A simple echo server.
  *
  * The server listens of localhost port 9301. It accepts multiple clients and
- * echoes back to the client any data sent to the server.
+ * echoes back to the client any data sent to the server. This server is a
+ * direct-style reimplementation of the echo server found at [1], which
+ * illustrates the same server written in CPS style.
  *
- * It can be tested with a telnet client by starting the server and on the same
- * machine, running:
+ * Compiling
+ * ---------
+ *
+ * Install the multicore compiler from the OCaml Labs dev repo from [2], and do:
+ *
+ *   opam switch 4.02.1+multicore
+ *   eval `opam config env`
+ *
+ * Compile the program with:
+ *
+ *   ocamlc -o aio aio.ml
+ *
+ * Running
+ * -------
+ * The echo server can be tested with a telnet client by starting the server and
+ * on the same machine, running:
  *
  *   telnet localhost 9301
  *
- * The server is a direct-style reimplementation of the echo server found at
- * [1], which illustrates the same server written in CPS style.
- *
+ * -----------------------
  * [1] http://www.mega-nerd.com/erikd/Blog/CodeHacking/Ocaml/ocaml_select.html
+ * [2] https://github.com/ocamllabs/opam-repo-dev
  *)
 
 open Printexc
@@ -121,7 +136,7 @@ module Aio : AIO = struct
 
     (* When there are no threads to run, perform blocking io. *)
     and perform_io timeout =
-      (* Hashtbl is multivalue ==> thread-safety! *)
+      (* Hashtbl is multivalued ==> thread-safety! *)
       let rd_fds = Hashtbl.fold (fun fd _ acc -> fd::acc) read_ht [] in
       let wr_fds = Hashtbl.fold (fun fd _ acc -> fd::acc) write_ht [] in
       let rdy_rd_fds, rdy_wr_fds, _ = Unix.select rd_fds wr_fds [] timeout in
