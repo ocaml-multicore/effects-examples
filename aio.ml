@@ -15,7 +15,7 @@
  *
  * Compile the program with:
  *
- *   ocamlc -o aio aio.ml
+ *   ocamlc -o aio unix.cma aio.ml
  *
  * Running
  * -------
