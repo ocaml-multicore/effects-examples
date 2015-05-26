@@ -104,7 +104,7 @@ module Aio : AIO = struct
     (* Wakes up sleeping threads.
      *
      * Returns [(t,b)] where [t] is the eariest time in the future when a thread
-     * needs to wake up, and [b] is true is some thread is woken up.
+     * needs to wake up, and [b] is true if some thread is woken up.
      *)
     let wakeup now : bool * float =
       let (l,w,n) = Hashtbl.fold (fun t k (l, w, next) ->
