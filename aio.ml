@@ -1,6 +1,6 @@
 (* A simple echo server.
  *
- * The server listens of localhost port 9301. It accepts multiple clients and
+ * The server listens on localhost port 9301. It accepts multiple clients and
  * echoes back to the client any data sent to the server. This server is a
  * direct-style reimplementation of the echo server found at [1], which
  * illustrates the same server written in CPS style.
