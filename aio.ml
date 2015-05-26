@@ -37,7 +37,7 @@ open Printf
  *
  * For each blocking action, if the action can be performed immediately, then it
  * is. Otherwise, the thread performing the blocking task is suspended and
- * automatically wakes up then the action completes. The suspend/resume is
+ * automatically wakes up when the action completes. The suspend/resume is
  * transparent to the programmer.
  *)
 module type AIO = sig
