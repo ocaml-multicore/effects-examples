@@ -61,8 +61,6 @@ module State : STATE = struct
   effect Write : 'a t * 'a -> unit
   let (:=) = fun r v -> perform (Write (r,v))
 
-  exception Found of Univ.t
-
   let run f =
     let comp =
       match f () with
