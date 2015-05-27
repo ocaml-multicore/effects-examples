@@ -20,7 +20,7 @@ module State (S : sig type t end) : STATE with type t = S.t = struct
   let run f ~init =
     let comp =
       match f () with
-      | v -> (fun s -> v)
+      | () -> (fun s -> ())
       | effect (Put s') k -> (fun s -> continue k () s')
       | effect Get k -> (fun s -> continue k s s)
     in comp init
