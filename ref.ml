@@ -15,19 +15,17 @@ module Univ : UNIV = struct
 
   type 'a prop = (module S with type t = 'a)
 
-  let create (type s) () =
+  let create (type s) () : s prop =
     let module M = struct
       type t = s
       exception E of t
     end in
-    (module M : S with type t = s)
+    (module M)
 
-  let inj (type s) p x =
-    let module M = (val p : S with type t = s) in
+  let inj (type s) ((module M) : s prop) x =
     M.E x
 
-  let proj (type s) p y =
-    let module M = (val p : S with type t = s) in
+  let proj (type s) ((module M) : s prop) y =
     match y with M.E x -> Some x | _ -> None
 
   let embed () = let p = create () in inj p, proj p
