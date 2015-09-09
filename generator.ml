@@ -99,11 +99,19 @@ let benchmark f n =
   let r = run [] n in
   get_mean_sd r
 
-let t = Tree.deep 25
+(* Main follows *)
+
+let n =
+  try
+    int_of_string (Sys.argv.(1))
+  with
+  | _ -> 25
+
+let t = Tree.deep n
 
 let iter_fun () = Tree.to_iter t (fun _ -> ())
 let (m,sd) = benchmark iter_fun 5
-let () = printf "Iter: mean = %f, sd = %f\n" m sd
+let () = printf "Iter: mean = %f, sd = %f\n%!" m sd
 
 let rec consume_all f =
   match f () with
@@ -114,10 +122,10 @@ let gen_cps_fun () =
   let f = Tree.to_gen_cps t in
   consume_all f
 let (m,sd) = benchmark gen_cps_fun 5
-let () = printf "Gen_cps: mean = %f, sd = %f\n" m sd
+let () = printf "Gen_cps: mean = %f, sd = %f\n%!" m sd
 
 let gen_fun () =
   let f = Tree.to_gen t in
   consume_all f
 let (m, sd) = benchmark gen_fun 5
-let () = printf "Gen_eff: mean = %f, sd = %f\n" m sd
+let () = printf "Gen_eff: mean = %f, sd = %f\n%!" m sd

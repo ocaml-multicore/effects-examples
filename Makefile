@@ -1,4 +1,4 @@
-all: concurrent generator state reify_reflect ref transaction aio
+all: concurrent generator state reify_reflect ref transaction aio delimcc
 
 concurrent: sched.mli sched.ml concurrent.ml
 	ocamlc -o concurrent sched.mli sched.ml concurrent.ml
@@ -20,6 +20,9 @@ transaction: transaction.ml
 
 aio: aio.ml
 	ocamlc -o aio unix.cma aio.ml
+
+delimcc: delimcc.ml
+	ocamlc -o delimcc delimcc.ml delimcc_paper_example.ml
 
 clean:
 	rm -f *.cmi *.cmo *.o concurrent generator *~ a.out state reify_reflect ref transaction aio
