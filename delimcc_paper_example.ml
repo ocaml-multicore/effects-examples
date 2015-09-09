@@ -1,4 +1,5 @@
-(* Example in the paper *)
+(* Example in the delimcc paper:
+ * http://okmij.org/ftp/continuations/caml-shift-journal.pdf *)
 
 open Delimcc.M;;
 
