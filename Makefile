@@ -25,4 +25,4 @@ delimcc: delimcc.ml
 	ocamlc -o delimcc delimcc.ml delimcc_paper_example.ml
 
 clean:
-	rm -f *.cmi *.cmo *.o concurrent generator *~ a.out state reify_reflect ref transaction aio
+	rm -f *.cmi *.cmo *.o concurrent generator *~ a.out state reify_reflect ref transaction aio delimcc
