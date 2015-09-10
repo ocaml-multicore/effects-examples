@@ -1,3 +1,6 @@
+(* Monadic Reflection :
+   http://www.cs.ioc.ee/mpc-amast06/msfp/filinski-slides.pdf *)
+
 (* The monad signature *)
 module type MONAD =
 sig
@@ -83,17 +86,17 @@ let combined_example () =
   put 100;
   raise (Failure "An error!");
   put 200
-  
+
 let print_exception e =
   Printf.printf "Exception: %s\n" (Printexc.to_string e)
 
 let () =
   run_state ~init:10 state_example;
   print_endline "========================================";
-  
+
   run_exception ~catch:print_exception exception_example;
   print_endline "========================================";
-  
+
   begin
     run_exception ~catch:print_exception @@ fun () ->
     run_state ~init:10 @@ fun () ->

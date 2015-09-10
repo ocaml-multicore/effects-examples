@@ -1,4 +1,5 @@
-(* One-shot multi-prompt delimited control. *)
+(* One-shot multi-prompt delimited control :
+   http://okmij.org/ftp/continuations/implementations.html *)
 
 module type S = sig
  type 'a prompt
