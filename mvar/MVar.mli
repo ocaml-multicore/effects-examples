@@ -3,19 +3,19 @@ module type S = sig
       filled with value. *)
   type 'a t
 
-  (** [new_mvar v] allocates a new mvar with the hole filled with value [v]. *)
-  val new_mvar : 'a -> 'a t
+  (** [create v] allocates a new mvar with the hole filled with value [v]. *)
+  val create : 'a -> 'a t
 
-  (** [new_empty_mvar ()] allocates a new mvar with the hole empty. *)
-  val new_empty_mvar : unit -> 'a t
+  (** [create_empty ()] allocates a new mvar with the hole empty. *)
+  val create_empty : unit -> 'a t
 
-  (** [put_mvar v m] fills mvar [m] with value v. If the mvar is already filled,
+  (** [put v m] fills mvar [m] with value v. If the mvar is already filled,
       this operation blocks until the hole become empty. *)
-  val put_mvar : 'a -> 'a t -> unit
+  val put : 'a -> 'a t -> unit
 
-  (** [take_mvar m] empties the mvar [m] if it is filled and returns the value.
+  (** [take m] empties the mvar [m] if it is filled and returns the value.
       If [m] is empty, then the operation blocks until the mvar becomes filled. *)
-  val take_mvar : 'a t -> 'a
+  val take : 'a t -> 'a
 end
 
 module type SCHED = sig
@@ -27,7 +27,7 @@ module type SCHED = sig
       execution of the current thread, and switches to the next thread in the
       scheduler's queue. *)
 
-  effect Resume  : 'a cont * 'a -> unit
+  effect Resume  : ('a cont * 'a) -> unit
   (** [Perform @@ Resume (k,v)] prepares the suspended continuation [k] with value [v] and
       enqueues it to the scheduler queue. *)
 end

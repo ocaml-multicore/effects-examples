@@ -1,15 +1,15 @@
 module type S = sig
   type 'a t
-  val new_mvar       : 'a -> 'a t
-  val new_empty_mvar : unit -> 'a t
-  val put_mvar       : 'a -> 'a t -> unit
-  val take_mvar      : 'a t -> 'a
+  val create       : 'a -> 'a t
+  val create_empty : unit -> 'a t
+  val put       : 'a -> 'a t -> unit
+  val take      : 'a t -> 'a
 end
 
 module type SCHED = sig
   type 'a cont
   effect Suspend : ('a cont -> unit) -> 'a
-  effect Resume  : 'a cont * 'a -> unit
+  effect Resume  : ('a cont * 'a) -> unit
 end
 
 module Make (S : SCHED) : S = struct
@@ -23,14 +23,14 @@ module Make (S : SCHED) : S = struct
 
   type 'a t = 'a mv_state ref
 
-  let new_empty_mvar () = ref (Empty (Queue.create ()))
+  let create_empty () = ref (Empty (Queue.create ()))
 
-  let new_mvar v = ref (Full (v, Queue.create ()))
+  let create v = ref (Full (v, Queue.create ()))
 
   let suspend f = perform @@ S.Suspend f
   let resume (a,b) = perform @@ S.Resume (a,b)
 
-  let put_mvar v mv =
+  let put v mv =
     match !mv with
     | Full (v', q) -> suspend (fun k -> Queue.push (v,k) q)
     | Empty q ->
@@ -40,7 +40,7 @@ module Make (S : SCHED) : S = struct
           let t = Queue.pop q in
           resume (t, v)
 
-  let take_mvar mv =
+  let take mv =
     match !mv with
     | Empty q -> suspend (fun k -> Queue.push k q)
     | Full (v, q) ->

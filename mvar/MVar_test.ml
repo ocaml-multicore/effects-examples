@@ -4,20 +4,19 @@ open MVar
 open Printf
 open Sched
 
-let mv = new_empty_mvar ()
+let mv = create_empty ()
 
-let get_tid () = Effects.perform Get_Tid
 let fork f = Effects.perform @@ Fork f
 
 let put x =
-  (printf "[Thread %d] Before put: %s\n" (get_tid ()) x;
-  put_mvar x mv;
-  printf "[Thread %d] After put: %s\n" (get_tid ()) x)
+  (printf "Before put: %s\n" x;
+  put x mv;
+  printf "After put: %s\n" x)
 
 let get () =
-  let () = printf "[Thread %d] Before get\n" (get_tid ()) in
-  let v = take_mvar mv in
-  let () = printf "[Thread %d] After get: %s\n" (get_tid ()) v in
+  let () = printf "Before get\n" in
+  let v = take mv in
+  let () = printf "After get: %s\n" v in
   v
 
 let main () =
