@@ -1,9 +1,10 @@
 EXE=callback
+COMP=SERIAL
 
 all: $(EXE)
 
 callback: foo.c bar.mli bar.ml
-	ocamlc -c foo.c
+	ocamlc -ccopt -D$(COMP) -c foo.c
 	ocamlc -c bar.mli
 	ocamlc -custom -o callback foo.o bar.ml -linkall
 
