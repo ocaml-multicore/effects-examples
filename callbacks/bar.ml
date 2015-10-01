@@ -1,3 +1,27 @@
+(* This example is intended to show that performing an effect in a C Callback,
+ * whose handler is outside the current callback isn't sensible. This
+ * corresponds to the stack given below (stack grows downward):
+ *
+ * +-----------------+
+ * |       main      |
+ * | (try .... with) | //OCaml frame
+ * +-----------------+
+ * |    caml_to_c    | //C frame -- OCaml calls to C
+ * +-----------------+
+ * |    c_to_caml    |
+ * |   (perform e)   | //OCaml frame -- C callback to OCaml
+ * +-----------------+
+ *
+ * This doesn't work because of the fact that there are intervening C frames
+ * which cannot be captured as a part of the continuation. Expected output is:
+ *
+ * [Caml] Call caml_to_c
+ * [C] Enter caml_to_c
+ * [C] Call c_to_caml
+ * [Caml] Enter c_to_caml
+ * Fatal error: exception Unhandled
+ *)
+
 effect E : unit
 
 let printf = Printf.printf
