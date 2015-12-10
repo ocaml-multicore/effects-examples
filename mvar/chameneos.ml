@@ -91,7 +91,7 @@ let rec tabulate' acc f = function
 
 let tabulate f n = List.rev @@ tabulate' [] f n
 
-let fork f = Effects.perform @@ Sched.Fork f
+let fork f = perform @@ Sched.Fork f
 
 let work colors n =
   let () = List.iter colors ~f:(fun c ->
