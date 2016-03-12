@@ -1,5 +1,3 @@
-open Printexc
-
 module type Applicative = sig
   type 'a t
   val pure  : 'a -> 'a t
@@ -19,14 +17,10 @@ module Promise : Promise = struct
   type 'a cont =
     | Cont : ('a,'b) continuation -> 'a cont
 
-  type 'a tvar = ('a, exn) result cont option ref
-
-  let mk_tvar k = ref (Some (Cont k))
-
   type 'a status =
     | Done of 'a
     | Cancelled of exn
-    | Waiting of 'a tvar list
+    | Waiting of ('a, exn) result cont list
 
   type 'a t = 'a status ref
 
@@ -48,29 +42,19 @@ module Promise : Promise = struct
     match !sr with
     | Waiting l ->
         sr := Done v;
-        List.iter (fun tv ->
-          match !tv with
-          | None -> ()
-          | Some (Cont k) ->
-              tv := None;
-              enqueue run_q k (Ok v)) l
+        List.iter (fun (Cont k) -> enqueue run_q k (Ok v)) l
     | _ -> failwith "Impossible: finish"
 
   let abort run_q sr e =
     match !sr with
     | Waiting l ->
         sr := Cancelled e;
-        List.iter (fun tv->
-          match !tv with
-          | None -> ()
-          | Some (Cont k) ->
-              tv := None;
-              enqueue run_q k (Error e)) l
+        List.iter (fun (Cont k) -> enqueue run_q k (Error e)) l
     | _ -> failwith "Impossible: abort"
 
   let wait sr k =
     match !sr with
-    | Waiting l -> sr := Waiting (mk_tvar k::l)
+    | Waiting l -> sr := Waiting (Cont k::l)
     | _ -> failwith "Impossible: wait"
 
   let get sr =
@@ -137,7 +121,7 @@ let test1 () =
 let _ =
   match run test1 with
   | Ok v -> Printf.printf "test1: %d\n" v
-  | Error e -> Printf.printf "Error: %s\n" @@ Printexc.to_string e
+  | Error e -> Printf.printf "test2: error: %s\n" @@ Printexc.to_string e
 
 let test2 () =
   let x = fork (fun () -> printf "test2: x\n%!"; 10) in
@@ -152,5 +136,5 @@ let test2 () =
 
 let _ =
   match run test2 with
-  | Ok v -> Printf.printf "test1: %d\n" v
-  | Error e -> Printf.printf "Error: %s\n" @@ Printexc.to_string e
+  | Ok v -> Printf.printf "test2: %d\n" v
+  | Error e -> Printf.printf "test2: error: %s\n" @@ Printexc.to_string e
