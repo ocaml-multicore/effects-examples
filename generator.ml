@@ -46,10 +46,10 @@ module Tree : TREE = struct
     | Leaf -> ()
     | Node (l, x, r) -> iter f l; f x; iter f r
 
+  (* val to_iter : 'a t -> ('a -> unit) -> unit *)
   let to_iter t f = iter f t
 
-  effect Next : 'a -> unit
-
+  (* val to_gen : 'a t -> (unit -> 'a option) *)
   let to_gen (type a) (t : a t) =
     let module M = struct effect Next : a -> unit end in
     let open M in

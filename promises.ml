@@ -14,18 +14,22 @@ end
 
 module Promise : Promise = struct
 
-  type 'a cont =
-    | Cont : ('a,'b) continuation -> 'a cont
+  type cont =
+    | Cont : (unit, 'b) continuation -> cont
+
+  type tvar = cont option ref
+
+  let mk_tvar k = ref (Some (Cont k))
 
   type 'a status =
     | Done of 'a
     | Cancelled of exn
-    | Waiting of ('a, exn) result cont list
+    | Waiting of tvar list
 
   type 'a t = 'a status ref
 
   effect Fork : (unit -> 'a) -> 'a t
-  effect Wait : 'a t -> ('a, exn) result
+  effect Wait : 'a t -> unit
 
   let fork f = perform (Fork f)
 
@@ -42,35 +46,42 @@ module Promise : Promise = struct
     match !sr with
     | Waiting l ->
         sr := Done v;
-        List.iter (fun (Cont k) -> enqueue run_q k (Ok v)) l
+        List.iter (fun tv ->
+          match !tv with
+          | None -> ()
+          | Some (Cont k) ->
+              tv := None;
+              enqueue run_q k ()) l
     | _ -> failwith "Impossible: finish"
 
   let abort run_q sr e =
     match !sr with
     | Waiting l ->
         sr := Cancelled e;
-        List.iter (fun (Cont k) -> enqueue run_q k (Error e)) l
+        List.iter (fun tv ->
+          match !tv with
+          | None -> ()
+          | Some (Cont k) ->
+              tv := None;
+              enqueue run_q k ()) l
     | _ -> failwith "Impossible: abort"
 
   let wait sr k =
     match !sr with
-    | Waiting l -> sr := Waiting (Cont k::l)
+    | Waiting l -> sr := Waiting (mk_tvar k::l)
     | _ -> failwith "Impossible: wait"
 
-  let get sr =
+  let rec get sr =
     match !sr with
     | Done v -> Ok v
     | Cancelled e -> Error e
-    | Waiting _ -> perform (Wait sr)
+    | Waiting _ -> perform (Wait sr); get sr
 
-  let get_val sr =
+  let rec get_val sr =
     match !sr with
     | Done v -> v
     | Cancelled e -> raise e
-    | Waiting _ ->
-        match perform (Wait sr) with
-        | Ok v -> v
-        | Error e -> raise e
+    | Waiting _ -> perform (Wait sr); get_val sr
 
   let pure v = ref (Done v)
 
@@ -80,15 +91,18 @@ module Promise : Promise = struct
     | _, (Cancelled _ as x) -> ref x
     | Waiting _, _ ->
         begin
-          match perform (Wait f) with
+          perform (Wait f);
+          match get f with
           | Ok f -> ref (Done f) <*> g
           | Error e -> ref (Cancelled e)
         end
     | Done f, Done g -> ref (Done (f g))
     | Done f, Waiting _ ->
-        begin match perform (Wait g) with
-        | Ok g -> ref (Done (f g))
-        | Error e -> ref (Cancelled e)
+        begin
+          perform (Wait g);
+          match get g with
+          | Ok g -> ref (Done (f g))
+          | Error e -> ref (Cancelled e)
         end
 
   let run main =
