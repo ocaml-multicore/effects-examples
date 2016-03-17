@@ -1,8 +1,11 @@
 all: concurrent generator state reify_reflect ref transaction aio \
-	delimcc dyn_wind
+	delimcc dyn_wind queens
 
 concurrent: sched.mli sched.ml concurrent.ml
 	ocamlc -o concurrent sched.mli sched.ml concurrent.ml
+
+queens: queens.ml
+	ocamlc -o queens queens.ml
 
 generator: generator.ml
 	ocamlc -o generator generator.ml
