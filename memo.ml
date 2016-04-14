@@ -5,10 +5,10 @@ module Memo : sig
    * evaluation of [f] from the start of [f] to the last invocation of [cut ()]
    * in [f], with respect to some input [x] to the memoized function.
    * Subsequent invocations of the memoized function with the same input [x]
-   * only evaluates the continuation of the [cut ()]. 
+   * only evaluates the continuation of the [cut ()].
    *
    * If the memoized function is applied to [y], where [not (x = y)], the memo
-   * cache is updated. 
+   * cache is updated.
    *)
 
   val cut : unit -> unit
@@ -26,20 +26,17 @@ end = struct
     {input : 'a;
      mutable cont : unit -> 'b}
 
-  let memoize (type a) (f : a -> 'b) =
-    let module M = struct effect Start : a -> unit end in
+  let memoize f =
     let cache = ref None in
-    fun (x : a) ->
-      try perform (M.Start x); f x with
-      | effect (M.Start x) k ->
-          begin 
-            match !cache with
-            | Some {input; cont} when input = x -> cont ()
-            | _ ->
-                let err_msg = "Memoized function was not cut" in
-                (cache := Some {input = x; cont = fun () -> failwith err_msg};
-                 continue k ())
-          end
+    fun x ->
+      try
+        match !cache with
+        | Some {input; cont} when x = input -> cont ()
+        | _ ->
+            let err_msg = "Memoized function was not cut" in
+            cache := Some {input = x; cont = fun () -> failwith err_msg};
+            f x
+      with
       | effect Cut k ->
           match !cache with
           | Some c ->
