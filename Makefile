@@ -1,11 +1,14 @@
 all: concurrent generator state reify_reflect ref transaction aio \
-	delimcc dyn_wind queens
+	delimcc dyn_wind queens memo
 
 concurrent: sched.mli sched.ml concurrent.ml
 	ocamlc -o concurrent sched.mli sched.ml concurrent.ml
 
 queens: queens.ml
 	ocamlc -o queens queens.ml
+
+memo: memo.ml
+	ocamlc -o memo memo.ml
 
 generator: generator.ml
 	ocamlc -o generator generator.ml
@@ -32,5 +35,5 @@ dyn_wind: dyn_wind.ml
 	ocamlc -o dyn_wind dyn_wind.ml
 
 clean:
-	rm -f *.cmi *.cmo *.o concurrent generator *~ a.out state reify_reflect ref \
-		transaction aio delimcc dyn_wind
+	rm -f *.cmx *.cmi *.cmo *.o concurrent generator *~ a.out state reify_reflect ref \
+		transaction aio delimcc dyn_wind queens memo
