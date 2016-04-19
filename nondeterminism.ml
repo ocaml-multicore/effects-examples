@@ -16,9 +16,7 @@ let toss () =
 (* Fixed interpretations *)		  
 let make_charged_handler (b : bool) =
   fun m ->
-  try
-    m ()
-  with
+  try m () with
   | effect Choose k -> continue k b
 			 
 let positive = make_charged_handler true  (* always interpret as true *)
@@ -27,9 +25,8 @@ let negative = make_charged_handler false (* always interpret as false *)
 (* [all_results] enumerates every possible outcome of a
    non-deterministic computation *)
 let all_results m =
-  try
-    [m ()]
-  with
+  match m () with
+  | v -> [v]
   | effect Choose k ->
      (continue k true) @ (continue (Obj.clone k) false)
 (* OCaml effects/multicore only supports
@@ -39,12 +36,8 @@ let all_results m =
 
 (* Random interpretation *)
 let coin m =
-  try
-    m ()
-  with
-  | effect Choose k -> if Random.float 1.0 > 0.5
-		       then continue k true
-		       else continue k false
+  try m () with
+  | effect Choose k -> continue k (Random.float 1.0 > 0.5)
 
 (* Another example: A drunken coin toss. A drunkard may fail to catch
 the coin. *)
@@ -59,16 +52,12 @@ let drunk_toss () =
 (* This exception handler returns Some result if [m] was successful,
 otherwise it returns None. *)
 let optionalize m =
-  try
-    Some (m ())
-  with
+  try Some (m ()) with
   | Too_drunk -> None
 
 (* This exception handler restarts [m] whenever it fails. *)		   
 let rec persevere m =
-  try
-    m ()
-  with
+  try m () with
   | Too_drunk -> persevere m
 
 (* The pipeline operator combines two handlers [h] and [g]. Data flows
