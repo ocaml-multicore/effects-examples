@@ -20,3 +20,4 @@ Examples to illustrate the use of algebraic effects in OCaml. See
 * [MVars](https://github.com/kayceesrk/ocaml-eff-example/blob/master/mvar/MVar.ml)
 * [Chameneos-redux](https://github.com/kayceesrk/ocaml-eff-example/blob/master/mvar/chameneos.ml)
 * [Memoization](https://github.com/kayceesrk/ocaml-eff-example/blob/master/memo.ml)
+* [Nondeterminism](https://github.com/kayceesrk/ocaml-eff-example/blob/master/nondeterminism.ml)
