@@ -1,4 +1,5 @@
 (** Coin flipping -- non-determinism as an algebraic effect **)
+(* This example is adapted from Kammar et. al (2013) *)
 
 (* Non-determinism is an effect given by an operation Choose, that
    returns a boolean. *)
