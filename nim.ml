@@ -17,6 +17,11 @@
 (* Data type modelling the players *)
 type player = Alice | Bob
 
+(* String representation of players *)					
+let string_of_player = function
+  | Alice -> "Alice"
+  | Bob   -> "Bob"
+    
 (* The [move] operation is centric to the game. The operation is
 parameterised by the active player and the number of sticks left in
 the game. *)
@@ -67,16 +72,19 @@ let elem_index p xs =
   in
   elem_index' 0 xs
 
+(* Nonlinear continue invokes a copy of [k] *)
+let nonlinear_continue k = continue (Obj.clone k)
+    
 (* This function maps a continuation [k] over a list *)	      
 let rec mapk k = function
-  | x :: xs -> (continue k x) :: (mapk (Obj.clone k) xs)
+  | x :: xs -> (nonlinear_continue k x) :: mapk k xs
   | []      -> []
 
 (* Finally, we can define the brute force strategy. In contrast to
 [ns] and [ps] it takes an additional parameter [p] which is the player
 for whom we are attempting to brute force a winning strategy. *)
 let bf p n k =
-  let winners = mapk (Obj.clone k) (valid_moves n) in
+  let winners = mapk k (valid_moves n) in
   match elem_index (fun w -> w == p) winners with
   | None   -> continue k 1     (* Not among the winners *)
   | Some i -> continue k (i+1) (* Among the winners, play the winning strategy (indices are zero-based) *)
@@ -95,6 +103,16 @@ to compute the game tree of a game. *)
 type gametree = Winner of player
 	      | Take   of player * (int * gametree) list
 
+(* String representation of a gametree *)                  
+let rec string_of_gametree : gametree -> string =
+  function
+  | Winner p     -> "Winner(" ^ (string_of_player p) ^ ")"
+  | Take (p, ts) -> "Take" ^ (string_of_pair string_of_player (string_of_list (string_of_pair string_of_int string_of_gametree)) (p, ts))
+and string_of_pair : 'a 'b. ('a -> string) -> ('b -> string) -> ('a * 'b) -> string =
+  fun string_of_x string_of_y (x,y) -> "(" ^ (string_of_x x) ^ ", " ^ (string_of_y y) ^ ")"
+and string_of_list string_of_x xs = "[" ^ (String.concat "; " (List.map string_of_x xs)) ^ "]"
+  
+                  
 (* A zip that zips until either list has been exhausted. *)
 let rec zip xs ys =
   match xs, ys with
@@ -133,14 +151,9 @@ let check_move p n k =
   then cheat p m    (* player p cheats by making an illegal move m (m < 1 or 3 < m) *)
   else continue k m
 		
-let check m =
+let checker m =
   try m () with
   | effect (Move (p,n)) k -> check_move p n k
-
-(* String representation of players *)					
-let string_of_player = function
-  | Alice -> "Alice"
-  | Bob   -> "Bob"
 					
 (* The following exception handler reports cheaters *)
 let cheat_report m =
@@ -207,14 +220,21 @@ end
 
 type gamestate = (player * int) list
 module GS = State (struct type t = gamestate end)
+
+(* Get and put operations *)  
 let get = GS.get
 let put = GS.put
+
+(* State handler with seed [s] *)  
 let state s m = GS.run m ~init:s
 
+(* Initially both players have zero wins *)
 let s0 = [(Alice,0); (Bob,0)]
 
 (* Update scoreboard *)
 let increment_wins p = List.map (fun (p',n) -> if p == p' then (p',n+1) else (p',n))
+
+(* Post-processing handler that updates the scoreboard *)
 let score_updater m =
   match m () with
   | p -> put (increment_wins p (get ()))
@@ -252,6 +272,7 @@ let print_board s =
    else ());
   print_endline("\\======================/")
 
+(* Post-processing handler that prints the scoreboard *)    
 let printer m =
   match m () with
   | _ -> print_board (get ())
@@ -263,14 +284,18 @@ let rec replay n m =
   | x -> x
 
 let run_examples () =
-  print_endline (">> game 7 |> perfect  :" ^ (string_of_player (game 7  |> perfect)));
-  print_endline (">> game 12 |> perfect :" ^ (string_of_player (game 12 |> perfect)));
+  print_endline (">> game 7 |> perfect  :\n" ^ (string_of_player (game 7  |> perfect)));
+  print_endline (">> game 12 |> perfect :\n" ^ (string_of_player (game 12 |> perfect)));
 
-  (** Computing game tree
-     game 3 |> gametree **)
+  (* Computing game tree *)
+  print_endline (">> game 3 |> gametree:\n" ^ (string_of_gametree (game 3 |> gametree)));
   
   (* A stateful scoreboard *)
   print_endline ">> game 7 |> (state s0) -<- printer -<- (replay 10) -<- coin -<- score_updater -<- bob_maybe_cheats :";
   let _ = game 7 |> (state s0) -<- printer -<- (replay 10) -<- coin -<- score_updater -<- bob_maybe_cheats in
+
+  (* Cheat detection example *)
+  print_endline ">> game 7 |> cheat_report -<- bob_cheats -<- checker :\n";
+  let _ = game 7 |> cheat_report -<- bob_cheats -<- checker in
   ()
 

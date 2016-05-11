@@ -29,10 +29,9 @@ let all_results m =
   | v -> [v]
   | effect Choose k ->
      (continue k true) @ (continue (Obj.clone k) false)
-(* OCaml effects/multicore only supports
-   single-shot continuations. But, we can simulate multi-shot
-   continuations by making a copy of the continuation (using Obj.clone)
-   and invoking the copy *)
+(* OCaml effects/multicore only supports single-shot
+   continuations. But, we can simulate multi-shot continuations by
+   copying a continuation (using Obj.clone) before invocation. *)
 
 (* Random interpretation *)
 let coin m =
