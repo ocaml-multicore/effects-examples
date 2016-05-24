@@ -22,3 +22,4 @@ Examples to illustrate the use of algebraic effects in OCaml. See
 * [Memoization](https://github.com/kayceesrk/ocaml-eff-example/blob/master/memo.ml)
 * [Nondeterminism](https://github.com/kayceesrk/ocaml-eff-example/blob/master/nondeterminism.ml)
 * [A mathematical game: Nim](https://github.com/kayceesrk/ocaml-eff-example/blob/master/nim.ml)
+* [Message-passing pipeline](https://github.com/kayceesrk/ocaml-eff-example/blob/master/eratosthenes.ml)
