@@ -32,7 +32,7 @@ let send sock str =
       while !total < len do
         let write_count = Aio.send sock str !total (len - !total) [] in
         total := write_count + !total
-        done
+      done
     with _ -> ()
     );
   !total
