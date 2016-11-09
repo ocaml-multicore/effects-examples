@@ -1,7 +1,7 @@
 effect Fork  : (unit -> unit) -> unit
-let fork f = perform (Fork f)
-
 effect Yield : unit
+
+let fork f = perform (Fork f)
 let yield () = perform Yield
 
 (* A concurrent round-robin scheduler *)
