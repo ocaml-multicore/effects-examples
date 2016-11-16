@@ -34,6 +34,9 @@ delimcc: delimcc.ml
 dyn_wind: dyn_wind.ml
 	ocamlc -o dyn_wind dyn_wind.ml
 
+pipes: pipes.ml
+	ocamlc -o pipes pipes.ml
+
 clean:
 	rm -f *.cmx *.cmi *.cmo *.o concurrent generator *~ a.out state reify_reflect ref \
 		transaction delimcc dyn_wind queens memo
