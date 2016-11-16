@@ -86,3 +86,4 @@ let example =
   >+>
    printer          
         
+let _ = example ()
