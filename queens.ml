@@ -31,7 +31,7 @@ let find_solution n =
       let rec loop = function
         | [] -> None
         | x::xs ->
-            match continue (Obj.clone k) x with
+            match continue (Obj.clone_continuation k) x with
             | None -> loop xs
             | Some x -> Some x
       in loop lst

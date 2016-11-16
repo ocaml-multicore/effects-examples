@@ -1,36 +1,5 @@
 open Printf
 
-module type UNIV = sig
-  type t
-  val embed : unit -> ('a -> t) * (t -> 'a option)
-end
-
-module Univ : UNIV = struct
-  type t = exn
-
-  module type S = sig
-    type t
-    exception E of t
-  end
-
-  type 'a prop = (module S with type t = 'a)
-
-  let create (type s) () : s prop =
-    let module M = struct
-      type t = s
-      exception E of t
-    end in
-    (module M)
-
-  let inj (type s) ((module M) : s prop) x =
-    M.E x
-
-  let proj (type s) ((module M) : s prop) y =
-    match y with M.E x -> Some x | _ -> None
-
-  let embed () = let p = create () in inj p, proj p
-end
-
 module type STATE = sig
   type 'a t
 
@@ -41,39 +10,47 @@ module type STATE = sig
   val run  : (unit -> 'a) -> 'a
 end
 
-let rec find : 'a 'b. ('a -> 'b option) -> 'a list -> 'b option =
-  fun f l -> match l with
-      [] -> None
-    | x :: xs -> match f x with None -> find f xs | s -> s
-
 module State : STATE = struct
 
-  type 'a t = {inj : 'a -> Univ.t; prj : Univ.t -> 'a option}
+  module type T = sig
+    type elt
+    effect Get : elt
+    effect Set : elt -> unit
+  end
+  type 'a t = (module T with type elt = 'a)
 
   effect Ref : 'a -> 'a t
   let ref v = perform (Ref v)
 
-  effect Read : 'a t -> 'a
-  let (!) = fun r -> perform (Read r)
+  let (!)  : type a. a t -> a =
+    fun (module R) -> perform  R.Get
 
-  effect Write : 'a t * 'a -> unit
-  let (:=) = fun r v -> perform (Write (r,v))
+  let (:=) : type a. a t -> a -> unit =
+    fun (module R) x -> perform (R.Set x)
 
   let run f =
-    let comp =
-      match f () with
-      | v -> (fun s -> v)
-      | effect (Ref v) k -> (fun s ->
-          let (inj, prj) = Univ.embed () in
-          let cont = continue k {inj;prj} in
-          cont (inj v::s))
-      | effect (Read {inj; prj}) k -> (fun s ->
-          match find prj s with
-          | Some v -> continue k v s
-          | None -> failwith "Ref.run: Impossible -> ref not found")
-      | effect (Write ({inj; prj}, v)) k -> (fun s ->
-          continue k () (inj v::s))
-    in comp []
+    begin try
+      f ()
+    with
+    | effect (Ref init) k ->
+        (* trick to name the existential type introduced by the matching: *)
+        (init, k) |> fun (type a) (init, k : a * (a t, _) continuation) ->
+        let module R =
+          struct
+            type elt = a
+            effect Get : elt
+            effect Set : elt -> unit
+          end
+        in
+        init |>
+        begin match
+          continue k (module R)
+        with
+        | result             -> fun x -> result
+        | effect  R.Get    k -> fun x -> continue k x  x
+        | effect (R.Set y) k -> fun x -> continue k () y
+        end
+    end
 end
 
 open State

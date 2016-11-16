@@ -10,7 +10,7 @@ Examples to illustrate the use of algebraic effects in OCaml. See
 * [Mutable state](https://github.com/kayceesrk/ocaml-eff-example/blob/master/state.ml)
 * [ML-style refs](https://github.com/kayceesrk/ocaml-eff-example/blob/master/ref.ml)
 * [Transactional state](https://github.com/kayceesrk/ocaml-eff-example/blob/master/transaction.ml)
-* [Asynchronous IO in direct-style](https://github.com/kayceesrk/ocaml-eff-example/blob/master/aio.ml)
+* [Asynchronous IO in direct-style](https://github.com/kayceesrk/ocaml-eff-example/blob/master/aio)
 * [Delimcc encoding](https://github.com/kayceesrk/ocaml-eff-example/blob/master/delimcc.ml)
 * [Dynamic wind](https://github.com/kayceesrk/ocaml-eff-example/blob/master/dyn_wind.ml)
 * [Deriving generator from any interator](https://github.com/kayceesrk/ocaml-eff-example/blob/master/generator.ml)

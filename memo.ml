@@ -41,7 +41,7 @@ end = struct
           match !cache with
           | Some c ->
               let rec save_cont k () =
-                c.cont <- save_cont (Obj.clone k);
+                c.cont <- save_cont (Obj.clone_continuation k);
                 continue k ()
               in
               save_cont k ()
