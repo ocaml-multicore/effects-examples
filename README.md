@@ -24,3 +24,4 @@ Examples to illustrate the use of algebraic effects in OCaml. See
 * [A mathematical game: Nim](https://github.com/kayceesrk/ocaml-eff-example/blob/master/nim.ml)
 * [Message-passing pipeline](https://github.com/kayceesrk/ocaml-eff-example/blob/master/eratosthenes.ml)
 * [Deep pipes](https://github.com/kayceesrk/ocaml-eff-example/blob/master/pipes.ml)
+* [Non termination from effects](https://github.com/kayceesrk/ocaml-eff-example/blob/master/loop.ml)
