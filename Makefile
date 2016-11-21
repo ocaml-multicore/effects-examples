@@ -37,9 +37,12 @@ dyn_wind: dyn_wind.ml
 loop: loop.ml
 	ocamlc -o loop loop.ml
 
+pipes: pipes.ml
+	ocamlc -o pipes pipes.ml
+
 clean:
 	rm -f *.cmx *.cmi *.cmo *.o concurrent generator *~ a.out state reify_reflect ref \
-		transaction delimcc dyn_wind queens memo loop
+		transaction delimcc dyn_wind queens memo loop pipes
 	$(MAKE) -C aio clean
 
 .PHONY: aio clean
