@@ -4,7 +4,7 @@ module type STATE = sig
   type t
   val put : t -> unit
   val get : unit -> t
-  val run : (unit -> unit) -> init:t -> unit
+  val run : (unit -> 'a) -> init:t -> t * 'a
 end
 
 module State (S : sig type t end) : STATE with type t = S.t = struct
@@ -20,7 +20,7 @@ module State (S : sig type t end) : STATE with type t = S.t = struct
   let run f ~init =
     let comp =
       match f () with
-      | () -> (fun s -> ())
+      | x -> (fun s -> (s, x))
       | effect (Put s') k -> (fun s -> continue k () s')
       | effect Get k -> (fun s -> continue k s s)
     in comp init
