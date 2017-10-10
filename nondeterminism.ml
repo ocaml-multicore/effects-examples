@@ -28,7 +28,7 @@ let all_results m =
   match m () with
   | v -> [v]
   | effect Choose k ->
-     (continue k true) @ (continue (Obj.clone k) false)
+     (continue k true) @ (continue (Obj.clone_continuation k) false)
 (* OCaml effects/multicore only supports single-shot
    continuations. But, we can simulate multi-shot continuations by
    copying a continuation (using Obj.clone) before invocation. *)

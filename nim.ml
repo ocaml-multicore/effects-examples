@@ -73,7 +73,7 @@ let elem_index p xs =
   elem_index' 0 xs
 
 (* Nonlinear continue invokes a copy of [k] *)
-let nonlinear_continue k = continue (Obj.clone k)
+let nonlinear_continue k = continue (Obj.clone_continuation k)
     
 (* This function maps a continuation [k] over a list *)	      
 let rec mapk k = function

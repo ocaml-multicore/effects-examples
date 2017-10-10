@@ -132,7 +132,7 @@ let test3 () =
 
    This example also includes an unneccessary extra 'Choice' effect to
    demonstrate the combination of other effects with state in the same
-   handler. This uses the experimental Obj.clone function to clone
+   handler. This uses the experimental Obj.clone_continuation function to clone
    continuations. *)
 type 'a reff = < get : 'a; put : 'a -> unit; internals : (module GetPutOps with type t = 'a) >
 
@@ -155,7 +155,7 @@ let run4 main =
   in
   match main () with
     | effect (New v) k -> donew k v
-    | effect (Choice) k -> let k' = Obj.clone k in continue k true; continue k' false
+    | effect (Choice) k -> let k' = Obj.clone_continuation k in continue k true; continue k' false
     | x                -> x
 
 let newref i = perform (New i)
