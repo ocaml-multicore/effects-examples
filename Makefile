@@ -1,6 +1,9 @@
 all: concurrent generator state reify_reflect ref transaction aio \
 	delimcc dyn_wind queens memo loop
 
+algorithmic_differentiation: algorithmic_differentiation.ml
+	ocamlc -o algorithmic_differentiation algorithmic_differentiation.ml
+
 concurrent: sched.mli sched.ml concurrent.ml
 	ocamlc -o concurrent sched.mli sched.ml concurrent.ml
 
@@ -33,7 +36,7 @@ delimcc: delimcc.ml
 
 dyn_wind: dyn_wind.ml
 	ocamlc -o dyn_wind dyn_wind.ml
-	
+
 loop: loop.ml
 	ocamlc -o loop loop.ml
 

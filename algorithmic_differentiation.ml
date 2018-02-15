@@ -1,3 +1,7 @@
+(* Reverse-mode Algorithmic differentiation using effect handlers.
+   Adapted from https://twitter.com/tiarkrompf/status/963314799521222656.
+   See https://openreview.net/forum?id=SJxJtYkPG for more information. *)
+
 module F : sig
   type t
   val mk : float -> t

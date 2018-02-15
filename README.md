@@ -27,3 +27,4 @@ Examples to illustrate the use of algebraic effects in OCaml. See
 * [Non termination from effects](https://github.com/kayceesrk/ocaml-eff-example/blob/master/loop.ml)
 * [Continuation cloning is tricky](https://github.com/kayceesrk/ocaml-eff-example/blob/master/clone_is_tricky.ml)
 * [A solution to the Same Fringe Problem](https://github.com/kayceesrk/ocaml-eff-example/blob/master/fringe.ml)
+* [Reverse-mode Algorithmic Differentiation](https://github.com/kayceesrk/ocaml-eff-example/blob/master/algorithmic_differentation.ml)
