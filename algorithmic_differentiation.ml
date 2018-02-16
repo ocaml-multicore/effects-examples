@@ -14,13 +14,13 @@ end = struct
 
   let mk v = {v; d = 0.0}
 
-  effect Plus : t * t -> t
+  effect Add : t * t -> t
   effect Mult : t * t -> t
 
   let run f =
     ignore (match f () with
     | r -> r.d <- 1.0; r
-    | effect (Plus(a,b)) k ->
+    | effect (Add(a,b)) k ->
         let x = {v = a.v +. b.v; d = 0.0} in
         ignore (continue k x);
         a.d <- a.d +. x.d;
@@ -43,7 +43,7 @@ end = struct
     run (fun () -> f (x,y));
     x.d, y.d
 
-  let (+.) a b = perform (Plus(a,b))
+  let (+.) a b = perform (Add(a,b))
   let ( *. ) a b = perform (Mult(a,b))
 end;;
 
