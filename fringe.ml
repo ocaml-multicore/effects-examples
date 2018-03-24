@@ -27,33 +27,47 @@ module SameFringe(E : EQUATABLE) = struct
   let yield e = perform (Yield e)
 
   (* The walk routine *)
-  let rec walk_tree : tree -> unit =
+  let rec walk : tree -> unit =
     function
     | Leaf e -> yield e
-    | Node (l,r) -> walk_tree l; walk_tree r
+    | Node (l,r) -> walk l; walk r
 
-  (* The comparator manages two walkers *)
-  let comparator : tree -> tree -> bool
-    = fun ltree rtree ->
-      (* pointers to the continuation of the left and right trees,
-         respectively *)
-      let lk = ref (fun () -> walk_tree ltree; true) in
-      let rk = ref (fun () -> walk_tree rtree; true) in
-      let upd r k = r := (fun () -> continue k ()) in
-      let rec loop () =
-        match !lk ()  with
-        | _ -> true
-        | effect (Yield i) k ->
-           match !rk () with
-           | result -> result
-           | effect (Yield j) k' ->
-              if E.equals i j then
-                let _ = upd lk k; upd rk k' in
-                loop ()
-              else
-                false
-      in
-      loop ()
+  (* Reification of effects *)
+  type resumption = (unit, step) continuation
+  and step = Done
+           | Yielded of E.t * resumption
+
+  (* Reifies `Yield' effects *)
+  let step f =
+    match f () with
+    | _ -> Done
+    | effect (Yield e) k -> Yielded (e, k)
+
+  (* The comparator "step walks" two given trees simultaneously *)
+  let comparator ltree rtree =
+    let l = fun () -> step (fun () -> walk ltree) in
+    let r = fun () -> step (fun () -> walk rtree) in
+    let rec stepper l r =
+      (* There are three cases to consider:
+         1) Both walk routines are done in which case the trees must have
+         the same fringe.
+         2) Both walk routines have yielded a value. There are two
+            subcases to consider:
+              a) the values are equal in which case the walk routines
+                 are continued
+              b) the values differ which implies that the trees do not have
+                 the same fringe.
+         3) Either walk routine is done, while the other yielded,
+         which implies the one tree has a larger fringe than the other.  *)
+      match l (), r () with
+      | Done, Done -> true
+      | Yielded (e, k), Yielded (e', k') ->
+         if E.equals e e'
+         then stepper (fun () -> continue k ()) (fun () -> continue k' ())
+         else false
+      | _, _ -> false
+    in
+    stepper l r
 
 end
 
