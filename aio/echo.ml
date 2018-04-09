@@ -26,7 +26,7 @@ open Printexc
 open Printf
 
 let send sock str =
-  let len = String.length str in
+  let len = Bytes.length str in
   let total = ref 0 in
   (try
       while !total < len do
@@ -43,7 +43,7 @@ let recv sock maxlen =
     try Aio.recv sock str 0 maxlen []
     with _ -> 0
   in
-  String.sub str 0 recvlen
+   Bytes.sub str 0 recvlen
 
 let close sock =
   try Unix.shutdown sock Unix.SHUTDOWN_ALL
@@ -53,13 +53,13 @@ let close sock =
 let string_of_sockaddr = function
   | Unix.ADDR_UNIX s -> s
   | Unix.ADDR_INET (inet,port) ->
-      (Unix.string_of_inet_addr inet) ^ ":" ^ (string_of_int port)
+      Unix.string_of_inet_addr inet ^ ":" ^ string_of_int port
 
 (* Repeat what the client says until the client goes away. *)
 let rec echo_server sock addr =
   try
     let data = recv sock 1024 in
-    if String.length data > 0 then
+    if Bytes.length data > 0 then
       (ignore (send sock data);
        echo_server sock addr)
     else
