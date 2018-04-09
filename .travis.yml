@@ -5,6 +5,9 @@ os:
   - linux
   - osx
 env:
-  - OCAML_VERSION=4.06.1+multicore
-  - OCAML_VERSION=4.04.2+multicore
-  - OCAML_VERSION=4.02.2+multicore
+  global:
+    - FORK_USER=kayceesrk
+  matrix:
+    - OCAML_VERSION=4.06.1+multicore
+    - OCAML_VERSION=4.04.2+multicore
+    - OCAML_VERSION=4.02.2+multicore
