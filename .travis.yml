@@ -1,0 +1,10 @@
+language: c
+install: wget https://raw.githubusercontent.com/kayceesrk/ocaml-travisci-skeleton/master/.travis-opam.sh
+script: bash -ex .travis-opam.sh
+os:
+  - linux
+  - osx
+env:
+  - OCAML_VERSION=4.06.1+multicore
+  - OCAML_VERSION=4.04.2+multicore
+  - OCAML_VERSION=4.02.2+multicore
