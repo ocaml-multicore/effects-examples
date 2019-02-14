@@ -82,22 +82,8 @@ for x = 0 to 10 do
               (2.0 *. x *. y *. y *. y *. y,
                4.0 *. x *. x *. y *. y *. y))
   done
-done
-;;
-(* f = x =>
-    df / dx = 1
-*)
-for x = 0 to 10 do
-    let x = float_of_int x in
-    assert (F.(grad (fun x -> x) x) = 1.)
 done;;
-(* f = e^x=>
-   df/dx = e^x
-*)
-for x = 0 to 10 do
-    let x = float_of_int x in
-    assert (F.(grad (fun x -> exp x) x) = exp x)
-done ;;
+
 (* f = e^(x * x)=>
    df/dx = 2*e^(x * x)
 *)
@@ -106,10 +92,16 @@ for x = 0 to 10 do
     assert (F.(grad (fun x -> exp (x +. x)) x) = 2. *. exp (x +. x))
 done;;
 
-(* f = e^(x * x)=>
-   df/dx = 2*x*e^(x*x)
+(* f = e^(x * y) =>
+   df/dx = y * e^(x * y)
+   df/dy = x * e^(x * y)
 *)
 for x = 0 to 10 do
+  for y = 0 to 10 do
     let x = float_of_int x in
-    assert (F.(grad (fun x -> exp (x *. x)) x) = 2. *. x *. exp (x *. x))
+    let y = float_of_int y in
+    assert (F.(grad2 (fun (x,y) -> exp (x *. y)) (x,y)) =
+              (y *. exp (x *. y),
+               x *. exp (x *. y)))
+  done
 done;;
