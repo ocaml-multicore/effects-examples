@@ -7,6 +7,7 @@ module F : sig
   val mk : float -> t
   val (+.) : t -> t -> t
   val ( *. ) : t -> t -> t
+  val exp  : t -> t
   val grad  : (t -> t) -> float -> float
   val grad2 : (t * t -> t) -> float * float -> float * float
 end = struct
@@ -16,6 +17,7 @@ end = struct
 
   effect Add : t * t -> t
   effect Mult : t * t -> t
+  effect Exp : t -> t
 
   let run f =
     ignore (match f () with
@@ -31,6 +33,11 @@ end = struct
         ignore (continue k x);
         a.d <- a.d +. (b.v *. x.d);
         b.d <- b.d +. (a.v *. x.d);
+        x
+    | effect (Exp(a)) k ->
+        let x = {v = exp a.v; d = 0.0} in
+        ignore (continue k x);
+        a.d <- x.d *. exp a.v;
         x)
 
   let grad f x =
@@ -43,8 +50,9 @@ end = struct
     run (fun () -> f (x,y));
     x.d, y.d
 
-  let (+.) a b = perform (Add(a,b))
+  let ( +. ) a b = perform (Add(a,b))
   let ( *. ) a b = perform (Mult(a,b))
+  let exp a   = perform (Exp(a))
 end;;
 
 (* f = x + x^3 =>
@@ -74,4 +82,34 @@ for x = 0 to 10 do
               (2.0 *. x *. y *. y *. y *. y,
                4.0 *. x *. x *. y *. y *. y))
   done
+done
+;;
+(* f = x =>
+    df / dx = 1
+*)
+for x = 0 to 10 do
+    let x = float_of_int x in
+    assert (F.(grad (fun x -> x) x) = 1.)
+done;;
+(* f = e^x=>
+   df/dx = e^x
+*)
+for x = 0 to 10 do
+    let x = float_of_int x in
+    assert (F.(grad (fun x -> exp x) x) = exp x)
+done ;;
+(* f = e^(x * x)=>
+   df/dx = 2*e^(x * x)
+*)
+for x = 0 to 10 do
+    let x = float_of_int x in
+    assert (F.(grad (fun x -> exp (x +. x)) x) = 2. *. exp (x +. x))
+done;;
+
+(* f = e^(x * x)=>
+   df/dx = 2*x*e^(x*x)
+*)
+for x = 0 to 10 do
+    let x = float_of_int x in
+    assert (F.(grad (fun x -> exp (x *. x)) x) = 2. *. x *. exp (x *. x))
 done;;
