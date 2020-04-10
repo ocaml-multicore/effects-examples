@@ -12,6 +12,7 @@ get() {
   wget https://raw.githubusercontent.com/${fork_user}/ocaml-ci-scripts/${fork_branch}/$@
 }
 
+REPO_DIR=$(pwd)
 TMP_BUILD=$(mktemp -d)
 cd ${TMP_BUILD}
 
@@ -23,4 +24,6 @@ eval $(opam config env)
 
 opam switch create 4.06.1+multicore --repositories=multicore=git+https://github.com/ocamllabs/multicore-opam.git,default
 opam install ocamlfind ocamlbuild
+
+cd $REPO_DIR
 make
