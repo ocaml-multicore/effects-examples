@@ -72,9 +72,10 @@ module SameFringe(E : EQUATABLE) = struct
 end
 
 (* Instantiate SameFringe to work over integers *)
-module SameFringe_Int = SameFringe(struct type t = int
-                                          let equals x y = (Pervasives.compare x y) = 0
-                                   end)
+module SameFringe_Int =
+  SameFringe(struct type t = int
+                    let equals x y = (Stdlib.compare x y) = 0
+             end)
 
 (* Some examples *)
 let ex1 = Node (Leaf 1, Node (Leaf 2, Leaf 3))

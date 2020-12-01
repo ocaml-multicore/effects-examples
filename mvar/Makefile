@@ -1,27 +1,30 @@
-all: chameneos-ghc chameneos-eff chameneos-monad mvar-test
+EXE := chameneos.exe chameneos_monad.exe MVar_test.exe chameneos_systhr.exe \
+	chameneos_lwt.exe
 
-mvar-test: MVar_test.ml
-	ocamlc -o MVar_test sched.mli sched.ml MVar.mli MVar.ml MVar_test.ml
+all: $(EXE)
 
-#Will only work with vanilla ocaml
-chameneos-systhr: chameneos_systhr.ml
-	ocamlfind ocamlc -o chameneos-systhr -thread -package threads -linkpkg chameneos_systhr.ml
+MVar_test.exe: MVar_test.ml
+	ocamlopt -o MVar_test.exe sched.mli sched.ml MVar.mli MVar.ml MVar_test.ml
 
-#Will only work with vanilla ocaml
-chameneos-lwt: chameneos_lwt.ml
-	ocamlfind ocamlc -o chameneos-lwt -thread -package lwt,lwt.unix,threads -linkpkg chameneos_lwt.ml
+chameneos_systhr.exe: chameneos_systhr.ml
+	ocamlfind ocamlc -o chameneos-systhr.exe -thread -package threads \
+		-linkpkg chameneos_systhr.ml
 
-chameneos-ghc: chameneos.hs
-	ghc -o chameneos-ghc -cpp -XBangPatterns -XScopedTypeVariables \
+chameneos_lwt.exe: chameneos_lwt.ml
+	ocamlfind ocamlc -o chameneos-lwt.exe -thread -package lwt,lwt.unix,threads \
+		-linkpkg chameneos_lwt.ml
+
+chameneos-ghc.exe: chameneos.hs
+	ghc -o chameneos-ghc.exe -cpp -XBangPatterns -XScopedTypeVariables \
 	-XGeneralizedNewtypeDeriving chameneos.hs
 
-#Needs multicore branch
-chameneos-eff: chameneos.ml
-	ocamlc -o chameneos-eff sched.mli sched.ml MVar.mli MVar.ml chameneos.ml
+chameneos.exe: chameneos.ml
+	ocamlopt -o chameneos.exe sched.mli sched.ml MVar.mli MVar.ml chameneos.ml
 
-chameneos-monad: chameneos_monad.ml
-	ocamlc -o chameneos-monad sched_monad.mli sched_monad.ml MVar_monad.mli MVar_monad.ml chameneos_monad.ml
+chameneos_monad.exe: chameneos_monad.ml
+	ocamlopt -o chameneos_monad.exe sched_monad.mli sched_monad.ml \
+		MVar_monad.mli MVar_monad.ml chameneos_monad.ml
 
 clean:
 	rm -f *.cmi *.cmx a.out *~ eff *.cmo MVar_test chameneos-eff chameneos-ghc \
-	*.hi *.o chameneos-systhr chameneos-lwt *.annot chameneos-monad
+	*.hi *.o $(EXE)

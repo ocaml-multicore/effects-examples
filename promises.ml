@@ -152,3 +152,5 @@ let _ =
   match run test2 with
   | Ok v -> Printf.printf "test2: %d\n" v
   | Error e -> Printf.printf "test2: error: %s\n" @@ Printexc.to_string e
+
+let _ = print_endline "SUCCESS"

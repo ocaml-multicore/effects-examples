@@ -1,19 +1,19 @@
-(** Deep encoding of pipes. 
+(** Deep encoding of pipes.
     The example is adapted from Kammar et al. (2013) **)
 
 (* We specialise our pipes to work only with integers *)
 effect Await : int
 let await () = perform Await
-  
+
 effect Yield : int -> unit
-let yield s = perform (Yield s)  
- 
+let yield s = perform (Yield s)
+
 type prod = Prod of (unit -> (cons -> unit))
 and cons  = Cons of (int -> (prod -> unit))
 
 let flip f = fun y x -> f x y
 
-(* Parameterised handler that takes a consumer as parameter *)  
+(* Parameterised handler that takes a consumer as parameter *)
 let up m =
   match m () with
   | v -> fun _ -> v
@@ -25,7 +25,7 @@ let up m =
    more convenient when combining handlers. *)
 let up = flip up
 
-(* Parameterised handler that takes a producer as parameter *)         
+(* Parameterised handler that takes a producer as parameter *)
 let down m =
   match m () with
   | v -> fun _ -> v
@@ -35,7 +35,7 @@ let down m =
 
 let down = flip down
 
-(** Some convenient combinators **)  
+(** Some convenient combinators **)
 let (<+<) d u = fun () -> down (Prod (fun () cons -> up cons u)) d
 let (>+>) d u = u <+< d
 
@@ -69,13 +69,13 @@ let rec skip : int -> (unit -> unit) =
     else
       ( ignore (await ())
       ; skip (n-1) () )
-    
-(* Prints a stream of integers *)    
+
+(* Prints a stream of integers *)
 let rec printer : unit -> unit
   = fun () ->
     Printf.printf "%d\n" (await ());
     printer ()
-  
+
 (* Wiring everything together *)
 let example =
    produceFrom 0
@@ -84,6 +84,6 @@ let example =
   >+>
    sumTo 100
   >+>
-   printer          
-        
+   printer
+
 let _ = example ()

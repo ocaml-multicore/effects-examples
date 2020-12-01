@@ -17,11 +17,11 @@
 (* Data type modelling the players *)
 type player = Alice | Bob
 
-(* String representation of players *)					
+(* String representation of players *)
 let string_of_player = function
   | Alice -> "Alice"
   | Bob   -> "Bob"
-    
+
 (* The [move] operation is centric to the game. The operation is
 parameterised by the active player and the number of sticks left in
 the game. *)
@@ -43,19 +43,19 @@ let game n =
   fun () -> alice_turn n
 
 (** Encoding player strategies **)
-(* The strategy handler assigns strategy s(p) to player [p] *)		      
+(* The strategy handler assigns strategy s(p) to player [p] *)
 let strategy (s : player -> (int -> (int, player) continuation -> player)) m =
   try
     m ()
   with
   | effect (Move (p,n)) k -> s p n k
-			       
+
 (* Simple (and naive) strategy *)
 let ns _ k = continue k 1
-		      
+
 (* The perfect strategy *)
-let ps n k = continue k (max 1 (n mod 4))		      
-		      
+let ps n k = continue k (max 1 (n mod 4))
+
 (* Brute force strategy *)
 (* The auxiliary function [valid_moves] computes the set of legal
 moves when there are [n] sticks left in the game. *)
@@ -74,8 +74,8 @@ let elem_index p xs =
 
 (* Nonlinear continue invokes a copy of [k] *)
 let nonlinear_continue k = continue (Obj.clone_continuation k)
-    
-(* This function maps a continuation [k] over a list *)	      
+
+(* This function maps a continuation [k] over a list *)
 let rec mapk k = function
   | x :: xs -> (nonlinear_continue k x) :: mapk k xs
   | []      -> []
@@ -89,11 +89,11 @@ let bf p n k =
   | None   -> continue k 1     (* Not among the winners *)
   | Some i -> continue k (i+1) (* Among the winners, play the winning strategy (indices are zero-based) *)
 
-(* Some example strategy handlers *)		       
+(* Some example strategy handlers *)
 let naive   = strategy (fun _ -> ns)
 let perfect = strategy (fun _ -> ps)
 let bruteforce_bob = strategy (function | Alice -> ps
-					| Bob   -> bf Bob)		       
+					| Bob   -> bf Bob)
 
 (** Computing game data **)
 (* The strategy handlers produce a single piece of data about games,
@@ -103,7 +103,7 @@ to compute the game tree of a game. *)
 type gametree = Winner of player
 	      | Take   of player * (int * gametree) list
 
-(* String representation of a gametree *)                  
+(* String representation of a gametree *)
 let rec string_of_gametree : gametree -> string =
   function
   | Winner p     -> "Winner(" ^ (string_of_player p) ^ ")"
@@ -111,15 +111,15 @@ let rec string_of_gametree : gametree -> string =
 and string_of_pair : 'a 'b. ('a -> string) -> ('b -> string) -> ('a * 'b) -> string =
   fun string_of_x string_of_y (x,y) -> "(" ^ (string_of_x x) ^ ", " ^ (string_of_y y) ^ ")"
 and string_of_list string_of_x xs = "[" ^ (String.concat "; " (List.map string_of_x xs)) ^ "]"
-  
-                  
+
+
 (* A zip that zips until either list has been exhausted. *)
 let rec zip xs ys =
   match xs, ys with
   | [], _ -> []
   | _, [] -> []
   | (x :: xs), (y :: ys) -> (x, y) :: (zip xs ys)
-  
+
 (* This function reifies a move as a node in the game tree *)
 let reify p n k =
   let subgames = mapk k (valid_moves n) in
@@ -134,7 +134,7 @@ let gametree m =
 (** Cheat detection via effect forwarding **)
 (* We model Cheat as an exception parameterised by the player (the
 cheater) and the number of sticks the player took *)
-exception Cheat of player * int 
+exception Cheat of player * int
 let cheat p n = raise (Cheat (p, n))
 
 (* A simple cheating strategy is to take all sticks, thereby winning
@@ -143,18 +143,18 @@ let cs n k = continue k n
 
 let bob_cheats = strategy (function | Alice -> ps
 	   			    | Bob -> cs)
-			 
+
 (* The cheat detection mechanism *)
 let check_move p n k =
   let m = move p n in
-  if m < 1 || 3 < m 
+  if m < 1 || 3 < m
   then cheat p m    (* player p cheats by making an illegal move m (m < 1 or 3 < m) *)
   else continue k m
-		
+
 let checker m =
   try m () with
   | effect (Move (p,n)) k -> check_move p n k
-					
+
 (* The following exception handler reports cheaters *)
 let cheat_report m =
   try m () with
@@ -165,7 +165,7 @@ let cheat_lose m =
   try m () with
   | Cheat (Alice, _) -> Bob
   | Cheat (Bob, _)   -> Alice
-				  
+
 (* The pipeline operator combines two handlers [h] and [g]. Data flows
    from [g] to [h]. *)
 let (-<-) h g = fun m -> h (fun () -> g m)
@@ -179,7 +179,7 @@ false *)
 let coin m =
   try m () with
   | effect Choose k -> continue k (Random.float 1.0 > 0.5)
-			
+
 let bob_maybe_cheats m =
   let h = if choose ()
 	  then strategy (fun _ -> ps)
@@ -187,7 +187,7 @@ let bob_maybe_cheats m =
 			 | Alice -> ps
 			 | Bob   -> cs)
   in h m
-			       
+
 (** Stateful scoreboard **)
 (* The state effect is given by two operations
     1) get to retrieve the current state,
@@ -221,11 +221,11 @@ end
 type gamestate = (player * int) list
 module GS = State (struct type t = gamestate end)
 
-(* Get and put operations *)  
+(* Get and put operations *)
 let get = GS.get
 let put = GS.put
 
-(* State handler with seed [s] *)  
+(* State handler with seed [s] *)
 let state s m = GS.run m ~init:s
 
 (* Initially both players have zero wins *)
@@ -272,7 +272,7 @@ let print_board s =
    else ());
   print_endline("\\======================/")
 
-(* Post-processing handler that prints the scoreboard *)    
+(* Post-processing handler that prints the scoreboard *)
 let printer m =
   match m () with
   | _ -> print_board (get ())
@@ -289,7 +289,7 @@ let run_examples () =
 
   (* Computing game tree *)
   print_endline (">> game 3 |> gametree:\n" ^ (string_of_gametree (game 3 |> gametree)));
-  
+
   (* A stateful scoreboard *)
   print_endline ">> game 7 |> (state s0) -<- printer -<- (replay 10) -<- coin -<- score_updater -<- bob_maybe_cheats :";
   let _ = game 7 |> (state s0) -<- printer -<- (replay 10) -<- coin -<- score_updater -<- bob_maybe_cheats in
@@ -299,3 +299,4 @@ let run_examples () =
   let _ = game 7 |> cheat_report -<- bob_cheats -<- checker in
   ()
 
+let _ = run_examples ()

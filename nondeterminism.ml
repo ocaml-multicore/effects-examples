@@ -4,21 +4,21 @@
 (* Non-determinism is an effect given by an operation Choose, that
    returns a boolean. *)
 effect Choose : bool
-let choose () = perform Choose		  
+let choose () = perform Choose
 
 (* An example non-deterministic computation: A coin toss *)
-type toss = Heads | Tails			
+type toss = Heads | Tails
 let toss () =
   if choose ()
   then Heads
   else Tails
-  
-(* Fixed interpretations *)		  
+
+(* Fixed interpretations *)
 let make_charged_handler (b : bool) =
   fun m ->
   try m () with
   | effect Choose k -> continue k b
-			 
+
 let positive = make_charged_handler true  (* always interpret as true *)
 let negative = make_charged_handler false (* always interpret as false *)
 
@@ -41,8 +41,8 @@ let coin m =
 (* Another example: A drunken coin toss. A drunkard may fail to catch
 the coin. *)
 exception Too_drunk
-let too_drunk () = raise Too_drunk	    
-				     
+let too_drunk () = raise Too_drunk
+
 let drunk_toss () =
   if choose ()
   then too_drunk ()
@@ -54,7 +54,7 @@ let optionalize m =
   try Some (m ()) with
   | Too_drunk -> None
 
-(* This exception handler restarts [m] whenever it fails. *)		   
+(* This exception handler restarts [m] whenever it fails. *)
 let rec persevere m =
   try m () with
   | Too_drunk -> persevere m
@@ -98,5 +98,6 @@ let run_examples () =
 
   print_endline (">> drunk_toss |> optionalize -<- coin        : " ^ (string_of_option string_of_toss (drunk_toss |> optionalize -<- coin)));
 
-  print_endline (">> drunk_toss |> peservere -<- coin          : " ^ (string_of_toss (drunk_toss |> persevere -<-  coin)));
-  
+  print_endline (">> drunk_toss |> peservere -<- coin          : " ^ (string_of_toss (drunk_toss |> persevere -<-  coin)))
+
+let _ = run_examples ()

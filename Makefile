@@ -1,51 +1,32 @@
-all: concurrent generator state reify_reflect ref transaction aio \
-	delimcc dyn_wind queens memo loop
+EXE := concurrent.exe state.exe ref.exe transaction.exe echo.exe delimcc.exe \
+	dyn_wind.exe generator.exe promises.exe queens.exe reify_reflect.exe \
+	MVar_test.exe chameneos.exe memo.exe nondeterminism.exe nim.exe \
+	eratosthenes.exe pipes.exe loop.exe clone_is_tricky.exe fringe.exe \
+	algorithmic_differentiation.exe
 
-algorithmic_differentiation: algorithmic_differentiation.ml
-	ocamlopt -o algorithmic_differentiation algorithmic_differentiation.ml
+all: $(EXE)
 
-concurrent: sched.mli sched.ml concurrent.ml
-	ocamlopt -o concurrent sched.mli sched.ml concurrent.ml
+concurrent.exe: sched.mli sched.ml concurrent.ml
+	ocamlopt -o concurrent.exe sched.mli sched.ml concurrent.ml
 
-queens: queens.ml
-	ocamlopt -o queens queens.ml
-
-memo: memo.ml
-	ocamlopt -o memo memo.ml
-
-generator: generator.ml
-	ocamlopt -o generator generator.ml
-
-state: state.ml
-	ocamlopt -o state state.ml
-
-reify_reflect: reify_reflect.ml
-	ocamlopt -o reify_reflect reify_reflect.ml
-
-ref: ref.ml
-	ocamlopt -o ref ref.ml
-
-transaction: transaction.ml
-	ocamlopt -o transaction transaction.ml
-
-aio:
+echo.exe: aio/aio.mli aio/aio.ml aio/echo.ml
 	$(MAKE) -C aio
+	cp aio/echo.native echo.exe
 
-delimcc: delimcc.ml
-	ocamlopt -w "-8" -o delimcc delimcc.ml delimcc_paper_example.ml
+MVar_test.exe: mvar/MVar_test.ml
+	$(MAKE) -C mvar MVar_test.exe
+	cp mvar/MVar_test.exe .
 
-dyn_wind: dyn_wind.ml
-	ocamlopt -o dyn_wind dyn_wind.ml
+chameneos.exe: mvar/chameneos.ml
+	$(MAKE) -C mvar chameneos.exe
+	cp mvar/chameneos.exe .
 
-loop: loop.ml
-	ocamlopt -o loop loop.ml
-
-pipes: pipes.ml
-	ocamlopt -o pipes pipes.ml
+%.exe: %.ml
+	ocamlopt -o $@ $<
 
 clean:
-	rm -f *.cmx *.cmi *.cmo *.o concurrent generator *~ a.out state reify_reflect ref \
-		transaction delimcc dyn_wind queens memo loop pipes
+	rm -f *.cmx *.cmi *.cmo *.o concurrent generator *~ $(EXE)
 	$(MAKE) -C aio clean
+	$(MAKE) -C mvar clean
 
-.PHONY: aio clean
+.PHONY: clean

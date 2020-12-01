@@ -1,4 +1,4 @@
-# OCaml effects examples
+#OCaml effects examples
 
 [![Build Status](https://travis-ci.org/kayceesrk/effects-examples.svg?branch=master)](https://travis-ci.org/kayceesrk/effects-examples)    
 
@@ -30,3 +30,14 @@ Examples to illustrate the use of algebraic effects in OCaml. See
 * [Continuation cloning is tricky](https://github.com/kayceesrk/ocaml-eff-example/blob/master/clone_is_tricky.ml)
 * [A solution to the Same Fringe Problem](https://github.com/kayceesrk/ocaml-eff-example/blob/master/fringe.ml)
 * [Reverse-mode Algorithmic Differentiation](https://github.com/kayceesrk/effects-examples/blob/master/algorithmic_differentiation.ml)
+
+## Running the examples
+
+Follow the instructions to [install Multicore OCaml](https://github.com/ocaml-multicore/multicore-opam#install-multicore-ocaml). Then,
+
+```bash
+$ opam install ocamlfind ocamlbuild lwt
+$ make
+```
+
+This builds all of the examples.
