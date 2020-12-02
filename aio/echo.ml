@@ -22,7 +22,7 @@
  * [2] https://github.com/ocamllabs/opam-repo-dev
  *)
 
-open Printexc
+(*open Printexc*)
 open Printf
 
 let send sock str =

@@ -1,0 +1,5 @@
+(executables
+ (names echo)
+ (libraries unix)
+ (modules aio echo)
+ (modes byte exe))

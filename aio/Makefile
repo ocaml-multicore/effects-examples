@@ -1,5 +1,5 @@
 all:
-	ocamlbuild -package unix echo.native
+	@dune exec ./echo.bc
 	
 clean:
-	ocamlbuild -clean
+	@dune clean
