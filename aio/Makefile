@@ -1,5 +1,5 @@
 all:
-	@dune exec ./echo.bc
+	@dune build echo.exe
 	
 clean:
 	@dune clean
