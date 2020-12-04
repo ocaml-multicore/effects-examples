@@ -18,7 +18,9 @@ let return x = fun c -> c x
 let atom f = fun c -> Atom (fun () -> (let b = f () in c b))
 let action f = f (fun () -> Stop)
 let fork f = fun c -> Fork ((fun () -> action f), c)
-let stop = fun c -> Stop
+[@@@warning "-32"]
+let stop = fun _ -> Stop
+[@@@warning "+32"]
 let yield = fun c -> Yield c
 let suspend f = fun c ->
   match f c with
@@ -30,7 +32,6 @@ type ready_cont = zaction
 let prepare k v = fun () -> k v
 
 
-open Printf
 
 let rec round = function
     | [] -> ()

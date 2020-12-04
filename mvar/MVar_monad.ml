@@ -16,7 +16,7 @@ let create v = ref (Full (v, Queue.create ()))
 let put mv v =
   S.suspend ( fun k ->
   match !mv with
-  | Full (v', q) ->
+  | Full (v, q) ->
       Queue.push (v,k) q;
       None
   | Empty q ->
@@ -27,7 +27,9 @@ let put mv v =
         let t = Queue.pop q in
         Some ((), Some (S.prepare t v)) )
 
+[@@@warning "-32"]
 let (>>) = S.(>>)
+[@@@warning "+32"]
 
 let take mv =
   S.suspend (fun k ->

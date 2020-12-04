@@ -143,7 +143,7 @@ let spell_int i =
     | '7' -> "seven"
     | '8' -> "eight"
     | '9' -> "nine"
-    | x -> failwith "unexpected char"
+    | _ -> failwith "unexpected char"
   in
   let s = string_of_int i in
   String.iter s ~f:(fun c -> printf " %s" (spell_char c));

@@ -32,7 +32,7 @@ module Make (S : SCHED) : S = struct
 
   let put v mv =
     match !mv with
-    | Full (v', q) -> suspend (fun k -> Queue.push (v,k) q)
+    | Full (v, q) -> suspend (fun k -> Queue.push (v,k) q)
     | Empty q ->
         if Queue.is_empty q then
           mv := Full (v, Queue.create ())

@@ -1,5 +1,3 @@
-open Printf
-
 effect Fork    : (unit -> unit) -> unit
 effect Yield   : unit
 
@@ -12,7 +10,7 @@ let run main =
   let enqueue t v =
     Queue.push (fun () -> continue t v) run_q
   in
-  let rec dequeue () =
+  let dequeue () =
     if Queue.is_empty run_q then ()
     else Queue.pop run_q ()
   in
@@ -27,7 +25,9 @@ let run main =
   in
   spawn main
 
+[@@@warning "-32"]
 let fork f = perform (Fork f)
 let yield () = perform Yield
 let suspend f = perform (Suspend f)
 let resume (k,v) = perform (Resume (k,v))
+[@@@warning "+32"]
