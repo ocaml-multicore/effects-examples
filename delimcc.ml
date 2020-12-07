@@ -34,8 +34,8 @@ module M : S = struct
    let push f  = match f () with  v -> v | effect (M.Prompt f) k -> f k in
    { take; push }
 
- let push_prompt {push} = push
- let take_subcont {take} = take
+ let push_prompt prompt = prompt.push
+ let take_subcont prompt = prompt.take
  let push_subcont k v =
    let k' = Obj.clone_continuation k in
    continue k' v
@@ -54,7 +54,7 @@ open M;;
 
 let p = new_prompt ();;
 
-assert ([] = push_prompt p (fun () -> 1::2::take_subcont p (fun k -> [])));;
+assert ([] = push_prompt p (fun () -> 1::2::take_subcont p (fun _ -> [])));;
 assert ([1;2] = push_prompt p (fun () -> 1::2::take_subcont p (fun k -> push_subcont k [])));;
 assert (135 =
   let p1 = new_prompt () in

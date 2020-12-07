@@ -17,6 +17,7 @@ effect Yield : unit
 let yield () = perform Yield
 
 (** Communication primitives **)
+
 effect Send : pid * message -> unit
 let send pid data =
   perform (Send (pid, data));

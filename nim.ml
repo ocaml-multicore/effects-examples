@@ -66,8 +66,8 @@ let valid_moves n =
 satisfying the predicate [p]. *)
 let elem_index p xs =
   let rec elem_index' i = function
-    | x :: xs when p x -> Some i
-    | x :: xs -> elem_index' (i+1) xs
+    | x :: _ when p x -> Some i
+    | _ :: xs -> elem_index' (i+1) xs
     | []      -> None
   in
   elem_index' 0 xs
@@ -171,6 +171,7 @@ let cheat_lose m =
 let (-<-) h g = fun m -> h (fun () -> g m)
 
 (** Choosing between strategies **)
+
 effect Choose : bool
 let choose () = perform Choose
 
@@ -212,8 +213,8 @@ module State (S : sig type t end) : STATE with type t = S.t = struct
   let run f ~init =
     let comp =
       match f () with
-      | x -> (fun s -> x)
-      | effect (Put s') k -> (fun s -> continue k () s')
+      | x -> (fun _ -> x)
+      | effect (Put s') k -> (fun _ -> continue k () s')
       | effect Get k      -> (fun s -> continue k s s)
     in comp init
 end
