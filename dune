@@ -1,5 +1,3 @@
-(dirs aio)
-
 (executables
  (names concurrent)
  (modules sched concurrent))

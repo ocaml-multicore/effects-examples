@@ -17,21 +17,21 @@ echo.exe: aio/aio.mli aio/aio.ml aio/echo.ml
 	cp _build/default/aio/echo.exe .
 
 MVar_test.exe: mvar/MVar_test.ml
-	dune build mvar/MVar_test.exe mvar
+	dune build mvar/MVar_test.exe 
 	cp _build/default/mvar/MVar_test.exe .
 
 chameneos.exe: mvar/chameneos.ml
-	dune build mvar/chameneos.exe mvar
+	dune build mvar/chameneos.exe 
 	cp _build/default/mvar/chameneos.exe
 
 chameneos_systhr.exe: mvar/chameneos_systhr.ml
-	dune build mvar/chameneos_systhr.exe mvar
+	dune build mvar/chameneos_systhr.exe 
 
 chameneos_lwt.exe: mvar/chameneos_lwt.ml
-	dune build mvar/chameneos_lwt.exe mvar
+	dune build mvar/chameneos_lwt.exe 
 
 chameneos_monad.exe: mvar/chameneos_monad.ml
-	dune build mvar/chameneos_monad.exe mvar
+	dune build mvar/chameneos_monad.exe 
 
 chameneos-ghc.exe: mvar/chameneos.hs
 	ghc -o mvar/chameneos-ghc.exe -cpp -XBangPatterns -XScopedTypeVariables \
