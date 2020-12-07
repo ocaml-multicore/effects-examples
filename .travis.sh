@@ -24,6 +24,6 @@ eval $(opam config env)
 
 opam switch create 4.10.0+multicore --packages=ocaml-variants.4.10.0+multicore --repositories=multicore=git+https://github.com/ocamllabs/multicore-opam.git,default
 eval $(opam config env)
-opam install ocamlfind ocamlbuild
+opam install dune
 cd $REPO_DIR
 make
