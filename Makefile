@@ -22,16 +22,16 @@ MVar_test.exe: mvar/MVar_test.ml
 
 chameneos.exe: mvar/chameneos.ml
 	dune build mvar/chameneos.exe 
-	cp _build/default/mvar/chameneos.exe
+	cp _build/default/mvar/chameneos.exe mvar/
 
 chameneos_systhr.exe: mvar/chameneos_systhr.ml
-	dune build mvar/chameneos_systhr.exe 
+	dune build mvar/chameneos_systhr.exe mvar/
 
 chameneos_lwt.exe: mvar/chameneos_lwt.ml
-	dune build mvar/chameneos_lwt.exe 
+	dune build mvar/chameneos_lwt.exe mvar/
 
 chameneos_monad.exe: mvar/chameneos_monad.ml
-	dune build mvar/chameneos_monad.exe 
+	dune build mvar/chameneos_monad.exe mvar/
 
 chameneos-ghc.exe: mvar/chameneos.hs
 	ghc -o mvar/chameneos-ghc.exe -cpp -XBangPatterns -XScopedTypeVariables \
