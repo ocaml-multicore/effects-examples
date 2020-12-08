@@ -46,9 +46,9 @@ module State : STATE = struct
         begin match
           continue k (module R)
         with
-        | result             -> fun x -> result
+        | result             -> fun _x -> result
         | effect  R.Get    k -> fun x -> continue k x  x
-        | effect (R.Set y) k -> fun x -> continue k () y
+        | effect (R.Set y) k -> fun _x -> continue k () y
         end
     end
 end

@@ -30,7 +30,6 @@ type ready_cont = zaction
 let prepare k v = fun () -> k v
 
 
-open Printf
 
 let rec round = function
     | [] -> ()

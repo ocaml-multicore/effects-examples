@@ -36,7 +36,7 @@ module Promise : Promise = struct
   let enqueue run_q k v =
     Queue.push (fun () -> ignore @@ continue k v) run_q
 
-  let rec dequeue run_q =
+  let dequeue run_q =
     if Queue.is_empty run_q then ()
     else (Queue.pop run_q) ()
 

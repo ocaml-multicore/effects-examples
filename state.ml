@@ -21,7 +21,7 @@ module State (S : sig type t end) : STATE with type t = S.t = struct
     let comp =
       match f () with
       | x -> (fun s -> (s, x))
-      | effect (Put s') k -> (fun s -> continue k () s')
+      | effect (Put s') k -> (fun _s -> continue k () s')
       | effect Get k -> (fun s -> continue k s s)
     in comp init
 end
@@ -40,4 +40,4 @@ let foo () : unit =
   SS.put "world";
   printf "%s\n" (SS.get ())
 
-let _ = IS.run (fun () -> SS.run foo "") 0
+let _ = IS.run (fun () -> SS.run foo ~init:"") ~init:0

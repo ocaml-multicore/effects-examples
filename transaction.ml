@@ -42,7 +42,7 @@ let () = atomically (fun () ->
     r := 20;
     r := 21;
     printf "T1: Before abort %d\n" (!r);
-    raise (Res !r);
+    raise (Res !r) |> ignore;
     printf "T1: After abort %d\n" (!r);
     r := 30)
   with
