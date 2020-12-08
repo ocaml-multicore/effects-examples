@@ -4,8 +4,6 @@ EXE := concurrent.exe state.exe ref.exe transaction.exe echo.exe delimcc.exe \
 	eratosthenes.exe pipes.exe loop.exe clone_is_tricky.exe fringe.exe \
 	algorithmic_differentiation.exe
 
-MVAR_EXE := chameneos_systhr.exe chameneos_lwt.exe chameneos_monad.exe chameneos-ghc.exe chameneos.exe MVar_test.exe
-
 all: $(EXE)
 
 concurrent.exe: sched.mli sched.ml concurrent.ml
@@ -13,7 +11,6 @@ concurrent.exe: sched.mli sched.ml concurrent.ml
 
 echo.exe: aio/aio.mli aio/aio.ml aio/echo.ml
 	dune build aio/echo.exe
-	cp _build/default/aio/echo.exe .
 
 MVar_test.exe: mvar/MVar_test.ml
 	dune build mvar/MVar_test.exe 
@@ -22,17 +19,20 @@ chameneos.exe: mvar/chameneos.ml
 	dune build mvar/chameneos.exe 
 
 chameneos_systhr.exe: mvar/chameneos_systhr.ml
-	dune build mvar/chameneos_systhr.exe mvar/
+	dune build mvar/chameneos_systhr.exe
 
 chameneos_lwt.exe: mvar/chameneos_lwt.ml
-	dune build mvar/chameneos_lwt.exe mvar/
+	dune build mvar/chameneos_lwt.exe
 
 chameneos_monad.exe: mvar/chameneos_monad.ml
-	dune build mvar/chameneos_monad.exe mvar/
+	dune build mvar/chameneos_monad.exe
 
 chameneos-ghc.exe: mvar/chameneos.hs
 	ghc -o mvar/chameneos-ghc.exe -cpp -XBangPatterns -XScopedTypeVariables \
 	-XGeneralizedNewtypeDeriving mvar/chameneos.hs
+
+callback:
+	dune build callbacks/callback
 
 %.exe: %.ml
 	dune build $@
