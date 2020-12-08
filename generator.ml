@@ -53,16 +53,14 @@ module Tree : TREE = struct
   let to_gen (type a) (t : a t) =
     let module M = struct effect Next : a -> unit end in
     let open M in
-    let step = ref (fun () -> assert false) in
-    let first_step () =
+    let rec step = ref (fun () ->
       try
         iter (fun x -> perform (Next x)) t;
         None
       with effect (Next v) k ->
-        step := continue k;
-        Some v
+        step := (fun () -> continue k ());
+        Some v)
     in
-      step := first_step;
       fun () -> !step ()
 
   let to_gen_cps t =
