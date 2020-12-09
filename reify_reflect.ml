@@ -77,21 +77,21 @@ let state_example () =
 (* Using the exception monad *)
 let exception_example () =
   Printf.printf "Raising an exception\n";
-  raise (Failure "An error!");
+  raise (Failure "An error!") |> ignore;
   Printf.printf "This shouldn't be displayed\n"
 
 (* Using both exceptions and state *)
 let combined_example () =
   Printf.printf "Initial state: %d\n" (get ());
   put 100;
-  raise (Failure "An error!");
+  raise (Failure "An error!") |> ignore;
   put 200
 
 let print_exception e =
   Printf.printf "Exception: %s\n" (Printexc.to_string e)
 
 let () =
-  run_state ~init:10 state_example;
+  run_state ~init:10 state_example |> ignore;
   print_endline "========================================";
 
   run_exception ~catch:print_exception exception_example;

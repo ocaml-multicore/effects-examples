@@ -1,0 +1,3 @@
+(rule (target foo.o) (deps foo.c) (action (run ocamlc -ccopt -DSERIAL -c foo.c)))
+(rule (target bar.cmi) (deps bar.mli) (action (run ocamlc -c bar.mli)))
+(rule (target callback) (deps bar.ml foo.o) (action (run ocamlc -custom -o callback foo.o bar.ml -linkall)))

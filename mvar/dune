@@ -1,0 +1,4 @@
+(executables
+ (names chameneos chameneos_monad chameneos_lwt MVar_test chameneos_systhr)
+ (libraries threads lwt lwt.unix)
+ (modules sched MVar sched_monad MVar_monad chameneos chameneos_monad chameneos_lwt MVar_test chameneos_systhr))
