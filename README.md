@@ -1,43 +1,45 @@
-# OCaml effects examples
+# EffPPL
 
-[![Build Status](https://travis-ci.org/ocaml-multicore/effects-examples.svg?branch=master)](https://travis-ci.org/ocaml-multicore/effects-examples)    
+We present EffPPL, a shallowly embedded domain-specific probabilistic programming library in Multicore OCaml made using effect handlers. EffPPL has the capability to perform approximate Bayesian inference for models using continuous random variables. EffPPL uses the Hamiltonian Monte Carlo for performing the inference.
 
-Examples to illustrate the use of algebraic effects in OCaml. See
-* [Effective Concurrency with Algebraic Effects](http://kcsrk.info/ocaml/multicore/2015/05/20/effects-multicore/)
-* [Pearls of Algebraic Effects and Handlers](http://kcsrk.info/ocaml/multicore/effects/2015/05/27/more-effects/)
 
-## Examples
+## Installation Instructions
 
-* [A concurrent round-robin scheduler](https://github.com/kayceesrk/ocaml-eff-example/blob/master/sched.ml)
-* [Mutable state](https://github.com/kayceesrk/ocaml-eff-example/blob/master/state.ml)
-* [ML-style refs](https://github.com/kayceesrk/ocaml-eff-example/blob/master/ref.ml)
-* [Transactional state](https://github.com/kayceesrk/ocaml-eff-example/blob/master/transaction.ml)
-* [Asynchronous IO in direct-style](https://github.com/kayceesrk/ocaml-eff-example/blob/master/aio)
-* [Delimcc encoding](https://github.com/kayceesrk/ocaml-eff-example/blob/master/delimcc.ml)
-* [Dynamic wind](https://github.com/kayceesrk/ocaml-eff-example/blob/master/dyn_wind.ml)
-* [Deriving generator from any interator](https://github.com/kayceesrk/ocaml-eff-example/blob/master/generator.ml)
-* [Promises](https://github.com/kayceesrk/ocaml-eff-example/blob/master/promises.ml)
-* [Backtracking N-Queens](https://github.com/kayceesrk/ocaml-eff-example/blob/master/queens.ml)
-* [Monadic reflection](https://github.com/kayceesrk/ocaml-eff-example/blob/master/reify_reflect.ml)
-* [MVars](https://github.com/kayceesrk/ocaml-eff-example/blob/master/mvar/MVar.ml)
-* [Chameneos-redux](https://github.com/kayceesrk/ocaml-eff-example/blob/master/mvar/chameneos.ml)
-* [Memoization](https://github.com/kayceesrk/ocaml-eff-example/blob/master/memo.ml)
-* [Nondeterminism](https://github.com/kayceesrk/ocaml-eff-example/blob/master/nondeterminism.ml)
-* [A mathematical game: Nim](https://github.com/kayceesrk/ocaml-eff-example/blob/master/nim.ml)
-* [Message-passing pipeline: Sieve of Eratostheneses](https://github.com/kayceesrk/ocaml-eff-example/blob/master/eratosthenes.ml)
-* [Deep pipes](https://github.com/kayceesrk/ocaml-eff-example/blob/master/pipes.ml)
-* [Non termination from effects](https://github.com/kayceesrk/ocaml-eff-example/blob/master/loop.ml)
-* [Continuation cloning is tricky](https://github.com/kayceesrk/ocaml-eff-example/blob/master/clone_is_tricky.ml)
-* [A solution to the Same Fringe Problem](https://github.com/kayceesrk/ocaml-eff-example/blob/master/fringe.ml)
-* [Reverse-mode Algorithmic Differentiation](https://github.com/kayceesrk/effects-examples/blob/master/algorithmic_differentiation.ml)
+1. Clone the repo
+2. In multicore Ocaml ensure that the following are installed:-
+  * owl 
+  * owl-plplot 
+  * base 
+  * lwt 
+  * re 
+3. Run 
+  `dune build effppl.a`
+4. You can then run the PPL library.
 
-## Running the examples
+## Tour of repository
 
-Follow the instructions to [install Multicore OCaml](https://github.com/ocaml-multicore/multicore-opam#install-multicore-ocaml). Then,
+The main inference algorithm can be found in lib/hmc.ml, this also includes the effect based algorithmic diffrentiation. For examples on how to use the library the lib/models can be checked. The results obtained by the models can be found in results/ folder. The code to compare the EffPPL code to Stan code can be seen in stan/ folder. Preliminary and Final Reports made for the UGRC can be found in the reports folder.
 
-```bash
-$ opam install dune lwt
-$ make
-```
+## Some Results
 
-This builds all of the examples.
+Here we show some results of the EffPPL library for a more detailed results page do kindly check the results folder.
+
+### Linear Regression
+
+We can see in figure below a plot showing sampled lines and the mean line. The black line indicates the line with the mean slope and constant. While the other faint blue lines indicate samples that PPL drew. 
+
+![](https://github.com/Arnhav-Datar/EffPPL/blob/main/results/machine_learning/linreg.png?raw=true)
+
+### Binary Classification
+
+Here to simulate a simple linear classifier we say that a correctly classified point is much more likelier than a wrongly classified point.
+
+![](https://github.com/Arnhav-Datar/EffPPL/blob/main/results/machine_learning/class.png?raw=true)
+
+### Auto-Regressive Models
+
+We use the autoregressive model described [here](https://mc-stan.org/docs/2_26/stan-users-guide/autoregressive-section.html). We generate data using alpha = 0.5 and beta = 1.03. As can be seen we are able to approximate both to a considerable extent. The plot below shows the predictions of alpha. 
+
+![](https://github.com/Arnhav-Datar/EffPPL/blob/main/results/time-series/autoreg_alpha.png?raw=true)
+The plot below shows the predictions of beta. 
+![](https://github.com/Arnhav-Datar/EffPPL/blob/main/results/time-series/autoreg_beta.png?raw=true)

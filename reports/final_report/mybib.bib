@@ -1,0 +1,398 @@
+
+@article{DBLP:journals/corr/Perov16a,
+  author    = {Yura N. Perov},
+  title = {{Applications of Probabilistic Programming (Master's thesis, 2015)}},
+  journal   = {CoRR},
+  volume    = {abs/1606.00075},
+  year      = {2016},
+  url       = {http://arxiv.org/abs/1606.00075},
+  archivePrefix = {arXiv},
+  eprint    = {1606.00075},
+  timestamp = {Mon, 13 Aug 2018 16:47:05 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/Perov16a.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+@article{effects,
+author = {Pretnar, Matija},
+year = {2015},
+month = {12},
+pages = {19-35},
+title = {{An Introduction to Algebraic Effects and Handlers. Invited tutorial paper}},
+volume = {319},
+journal = {Electronic Notes in Theoretical Computer Science},
+doi = {10.1016/j.entcs.2015.12.003}
+}
+
+@inproceedings{appl,
+author = {Gordon, Andrew D. and Henzinger, Thomas A. and Nori, Aditya V. and Rajamani, Sriram K.},
+title = {{Probabilistic Programming}},
+year = {2014},
+isbn = {9781450328654},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2593882.2593900},
+doi = {10.1145/2593882.2593900},
+abstract = { Probabilistic programs are usual functional or imperative programs with two added constructs: (1) the ability to draw values at random from distributions, and (2) the ability to condition values of variables in a program via observations. Models from diverse application areas such as computer vision, coding theory, cryptographic protocols, biology and reliability analysis can be written as probabilistic programs.  Probabilistic inference is the problem of computing an explicit representation of the probability distribution implicitly specified by a probabilistic program. Depending on the application, the desired output from inference may vary---we may want to estimate the expected value of some function f with respect to the distribution, or the mode of the distribution, or simply a set of samples drawn from the distribution.  In this paper, we describe connections this research area called ``Probabilistic Programming" has with programming languages and software engineering, and this includes language design, and the static and dynamic analysis of programs. We survey current state of the art and speculate on promising directions for future research. },
+booktitle = {{Future of Software Engineering Proceedings}},
+pages = {167–181},
+numpages = {15},
+keywords = {Probabilistic programming, Machine learning, Program analysis},
+location = {Hyderabad, India},
+series = {FOSE 2014}
+}
+
+ @misc{ocaml-multicore, 
+    title={{ Effects Examples }}, 
+    url={https://github.com/ocaml-multicore/effects-examples}, 
+    journal={GitHub}, 
+    author={Multicore OCaml}
+} 
+ 
+ @inproceedings{hack,
+author = {Ai, Jessica and Arora, Nimar S. and Dong, ﻿Ning and Gokkaya, ﻿Beliz and Jiang, Thomas and Kubendran, ﻿Anitha and Kumar, ﻿Arun and Tingley, Michael and Torabi, ﻿Narjes},
+title = {{HackPPL: A Universal Probabilistic Programming Language}},
+year = {2019},
+isbn = {9781450367196},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3315508.3329974},
+doi = {10.1145/3315508.3329974},
+abstract = {HackPPL is a probabilistic programming language (PPL) built within the Hack programming language. Its universal inference engine allows developers to perform inference across a diverse set of models expressible in arbitrary Hack code. Through language-level extensions and direct integration with developer tools, HackPPL aims to bridge the gap between domain-specific and embedded PPLs. This paper overviews the design and implementation choices for the HackPPL toolchain and presents findings by applying it to a representative problem faced by social media companies.},
+booktitle = {{Proceedings of the 3rd ACM SIGPLAN International Workshop on Machine Learning and Programming Languages}},
+pages = {20–28},
+numpages = {9},
+keywords = {Variational methods, Bayesian Inference, Crowdsourcing, Probabilistic Programming, Markov-chain Monte Carlo methods, Social Networks, Coroutines, Probabilistic Representations, Hack},
+location = {Phoenix, AZ, USA},
+series = {MAPL 2019}
+}
+
+@misc{pyro,
+      title={{Pyro: Deep Universal Probabilistic Programming}}, 
+      author={Eli Bingham and Jonathan P. Chen and Martin Jankowiak and Fritz Obermeyer and Neeraj Pradhan and Theofanis Karaletsos and Rohit Singh and Paul Szerlip and Paul Horsfall and Noah D. Goodman},
+      year={2018},
+      eprint={1810.09538},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+
+@article{adml,
+author = {Baydin, At\i{}l\i{}m G\"{u}nes and Pearlmutter, Barak A. and Radul, Alexey Andreyevich and Siskind, Jeffrey Mark},
+title = {Automatic Differentiation in Machine Learning: A Survey},
+year = {2017},
+issue_date = {January 2017},
+publisher = {JMLR.org},
+volume = {18},
+number = {1},
+issn = {1532-4435},
+abstract = {Derivatives, mostly in the form of gradients and Hessians, are ubiquitous in machine learning. Automatic differentiation (AD), also called algorithmic differentiation or simply "auto-diff", is a family of techniques similar to but more general than backpropagation for efficiently and accurately evaluating derivatives of numeric functions expressed as computer programs. AD is a small but established field with applications in areas including computational uid dynamics, atmospheric sciences, and engineering design optimization. Until very recently, the fields of machine learning and AD have largely been unaware of each other and, in some cases, have independently discovered each other's results. Despite its relevance, general-purpose AD has been missing from the machine learning toolbox, a situation slowly changing with its ongoing adoption under the names "dynamic computational graphs" and "differentiable programming". We survey the intersection of AD and machine learning, cover applications where AD has direct relevance, and address the main implementation techniques. By precisely defining the main differentiation techniques and their interrelationships, we aim to bring clarity to the usage of the terms "autodiff", "automatic differentiation", and "symbolic differentiation" as these are encountered more and more in machine learning settings.},
+journal = {J. Mach. Learn. Res.},
+month = jan,
+pages = {5595–5637},
+numpages = {43},
+keywords = {backpropagation, differentiable programming}
+}
+
+@inproceedings{Baydin_2019,
+author = {Baydin, Atilim G\"{u}ne\c{s} and Shao, Lei and Bhimji, Wahid and Heinrich, Lukas and Meadows, Lawrence and Liu, Jialin and Munk, Andreas and Naderiparizi, Saeid and Gram-Hansen, Bradley and Louppe, Gilles and Ma, Mingfei and Zhao, Xiaohui and Torr, Philip and Lee, Victor and Cranmer, Kyle and Prabhat and Wood, Frank},
+title = {Etalumis: Bringing Probabilistic Programming to Scientific Simulators at Scale},
+year = {2019},
+isbn = {9781450362290},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3295500.3356180},
+doi = {10.1145/3295500.3356180},
+abstract = {Probabilistic programming languages (PPLs) are receiving widespread attention for performing Bayesian inference in complex generative models. However, applications to science remain limited because of the impracticability of rewriting complex scientific simulators in a PPL, the computational cost of inference, and the lack of scalable implementations. To address these, we present a novel PPL framework that couples directly to existing scientific simulators through a cross-platform probabilistic execution protocol and provides Markov chain Monte Carlo (MCMC) and deep-learning-based inference compilation (IC) engines for tractable inference. To guide IC inference, we perform distributed training of a dynamic 3DCNN-LSTM architecture with a PyTorch-MPI-based framework on 1,024 32-core CPU nodes of the Cori supercomputer with a global mini-batch size of 128k: achieving a performance of 450 Tflop/s through enhancements to PyTorch. We demonstrate a Large Hadron Collider (LHC) use-case with the C++ Sherpa simulator and achieve the largest-scale posterior inference in a Turing-complete PPL.},
+booktitle = {Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis},
+articleno = {29},
+numpages = {24},
+keywords = {probabilistic programming, inference, deep learning, simulation},
+location = {Denver, Colorado},
+series = {SC '19}
+}
+
+
+@misc{vandemeent2018introduction,
+      title={{An Introduction to Probabilistic Programming}}, 
+      author={Jan-Willem van de Meent and Brooks Paige and Hongseok Yang and Frank Wood},
+      year={2018},
+      eprint={1809.10756},
+      archivePrefix={arXiv},
+      primaryClass={stat.ML}
+}
+@article{IBAL,
+author = {Pfeffer, Avi},
+year = {2000},
+month = {01},
+pages = {},
+title = {{The Design and Implementation of IBAL: A General-Purpose Probabilistic Language}},
+journal = {Applied Sciences}
+}
+@inproceedings{Hansei,
+author = {Kiselyov, Oleg and Shan, Chung-Chieh},
+title = {{Embedded Probabilistic Programming}},
+year = {2009},
+isbn = {9783642030338},
+publisher = {Springer-Verlag},
+address = {Berlin, Heidelberg},
+url = {https://doi.org/10.1007/978-3-642-03034-5_17},
+doi = {10.1007/978-3-642-03034-5_17},
+abstract = {Two general techniques for implementing a domain-specific language (DSL) with less overhead are the <em>finally-tagless</em> embedding of object programs and the <em>direct-style</em> representation of side effects. We use these techniques to build a DSL for <em>probabilistic programming</em> , for expressing countable probabilistic models and performing exact inference and importance sampling on them. Our language is embedded as an ordinary OCaml library and represents probability distributions as ordinary OCaml programs. We use delimited continuations to reify probabilistic programs as lazy search trees, which inference algorithms may traverse without imposing any interpretive overhead on deterministic parts of a model. We thus take advantage of the existing OCaml implementation to achieve competitive performance and ease of use. Inference algorithms can easily be embedded in probabilistic programs themselves.},
+booktitle = {{Proceedings of the IFIP TC 2 Working Conference on Domain-Specific Languages}},
+pages = {360–384},
+numpages = {25},
+location = {Oxford, UK},
+series = {DSL '09}
+}
+
+@article{roy2020probabilistic,
+  title={{A probabilistic programming language in OCaml}},
+  author={Roy, Anik},
+  year={2020}
+}
+@misc{wang2018owl,
+      title={{Owl: A General-Purpose Numerical Library in OCaml}}, 
+      author={Liang Wang},
+      year={2018},
+      eprint={1707.09616},
+      archivePrefix={arXiv},
+      primaryClass={cs.MS}
+}
+@inproceedings{tran2017deep,
+  author = {Dustin Tran and Matthew D. Hoffman and Rif A. Saurous and Eugene Brevdo and Kevin Murphy and David M. Blei},
+  title = {{Deep probabilistic programming}},
+  booktitle = {{International Conference on Learning Representations}},
+  year = {2017}
+}
+@misc{collins2020probabilistic,
+      title={{Probabilistic Programming with CuPPL}}, 
+      author={Alexander Collins and Vinod Grover},
+      year={2020},
+      eprint={2010.08454},
+      archivePrefix={arXiv},
+      primaryClass={cs.PL}
+}
+@article{stan,
+author = {Carpenter, Bob and Gelman, Andrew and Hoffman, Matthew and Lee, Daniel and Goodrich, Ben and Betancourt, Michael and Brubaker, Marcus and Guo, Jiqiang and Li, Peter and Riddell, Allen},
+year = {2017},
+month = {01},
+pages = {},
+title = {{Stan : A Probabilistic Programming Language}},
+volume = {76},
+journal = {Journal of Statistical Software},
+doi = {10.18637/jss.v076.i01}
+}
+
+@misc{zhou2019lfppl,
+      title={{LF-PPL: A Low-Level First Order Probabilistic Programming Language for Non-Differentiable Models}}, 
+      author={Yuan Zhou and Bradley J. Gram-Hansen and Tobias Kohn and Tom Rainforth and Hongseok Yang and Frank Wood},
+      year={2019},
+      eprint={1903.02482},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+
+@misc{hoffman2011nouturn,
+      title={{The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo}}, 
+      author={Matthew D. Hoffman and Andrew Gelman},
+      year={2011},
+      eprint={1111.4246},
+      archivePrefix={arXiv},
+      primaryClass={stat.CO}
+}
+@misc{betancourt2018conceptual,
+      title={{A Conceptual Introduction to Hamiltonian Monte Carlo}}, 
+      author={Michael Betancourt},
+      year={2018},
+      eprint={1701.02434},
+      archivePrefix={arXiv},
+      primaryClass={stat.ME}
+}
+@misc{wang2019demystifying,
+      title={{Demystifying Differentiable Programming: Shift/Reset the Penultimate Backpropagator}}, 
+      author={Fei Wang and Daniel Zheng and James Decker and Xilun Wu and Grégory M. Essertel and Tiark Rompf},
+      year={2019},
+      eprint={1803.10228},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+@InProceedings{kiselyov2009embedded,
+author="Kiselyov, Oleg
+and Shan, Chung-chieh",
+editor="Taha, Walid Mohamed",
+title={{"Embedded Probabilistic Programming"}},
+booktitle="Domain-Specific Languages",
+year="2009",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="360--384",
+abstract="Two general techniques for implementing a domain-specific language (DSL) with less overhead are the finally-tagless embedding of object programs and the direct-style representation of side effects. We use these techniques to build a DSL for probabilistic programming, for expressing countable probabilistic models and performing exact inference and importance sampling on them. Our language is embedded as an ordinary OCaml library and represents probability distributions as ordinary OCaml programs. We use delimited continuations to reify probabilistic programs as lazy search trees, which inference algorithms may traverse without imposing any interpretive overhead on deterministic parts of a model. We thus take advantage of the existing OCaml implementation to achieve competitive performance and ease of use. Inference algorithms can easily be embedded in probabilistic programs themselves.",
+isbn="978-3-642-03034-5"
+}
+
+@article{gilks1994language,
+  title={{A language and program for complex Bayesian modelling}},
+  author={Gilks, Wally R and Thomas, Andrew and Spiegelhalter, David J},
+  journal={Journal of the Royal Statistical Society: Series D (The Statistician)},
+  volume={43},
+  number={1},
+  pages={169--177},
+  year={1994},
+  publisher={Wiley Online Library}
+}
+
+@article{jags,
+author = {Plummer, Martyn},
+year = {2003},
+month = {04},
+pages = {},
+title = {{JAGS: A Program for Analysis of Bayesian Graphical Models using Gibbs Sampling}},
+volume = {124},
+journal = {3rd International Workshop on Distributed Statistical Computing (DSC 2003); Vienna, Austria}
+}
+@article{wang2011using,
+  title={{Using infer. net for statistical analyses}},
+  author={Wang, Shen SJ and Wand, Matt P},
+  journal={The American Statistician},
+  volume={65},
+  number={2},
+  pages={115--126},
+  year={2011},
+  publisher={Taylor \& Francis}
+}
+@inproceedings{tolpin2016design,
+  title={{Design and implementation of probabilistic programming language anglican}},
+  author={Tolpin, David and van de Meent, Jan-Willem and Yang, Hongseok and Wood, Frank},
+  booktitle={Proceedings of the 28th Symposium on the Implementation and Application of Functional programming Languages},
+  pages={1--12},
+  year={2016}
+}
+@article{goodman2012church,
+  title={{Church: a language for generative models}},
+  author={Goodman, Noah and Mansinghka, Vikash and Roy, Daniel M and Bonawitz, Keith and Tenenbaum, Joshua B},
+  journal={arXiv preprint arXiv:1206.3255},
+  year={2012}
+}
+
+@article{Margossian_2019,
+   title={{A review of automatic differentiation and its efficient implementation}},
+   volume={9},
+   ISSN={1942-4795},
+   url={http://dx.doi.org/10.1002/WIDM.1305},
+   DOI={10.1002/widm.1305},
+   number={4},
+   journal={WIREs Data Mining and Knowledge Discovery},
+   publisher={Wiley},
+   author={Margossian, Charles C.},
+   year={2019},
+   month={Mar}
+}
+
+@Inbook{kstest,
+title={{"Kolmogorov--Smirnov Test"}},
+bookTitle="The Concise Encyclopedia of Statistics",
+year="2008",
+publisher="Springer New York",
+address="New York, NY",
+pages="283--287",
+isbn="978-0-387-32833-1",
+doi="10.1007/978-0-387-32833-1_214",
+url="https://doi.org/10.1007/978-0-387-32833-1_214"
+}
+
+@inproceedings{10.1145/2628136.2628138,
+author = {Gibbons, Jeremy and Wu, Nicolas},
+title = {{Folding Domain-Specific Languages: Deep and Shallow Embeddings (Functional Pearl)}},
+year = {2014},
+isbn = {9781450328739},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2628136.2628138},
+doi = {10.1145/2628136.2628138},
+abstract = {A domain-specific language can be implemented by embedding within a general-purpose host language. This embedding may be deep or shallow, depending on whether terms in the language construct syntactic or semantic representations. The deep and shallow styles are closely related, and intimately connected to folds; in this paper, we explore that connection.},
+booktitle = {{Proceedings of the 19th ACM SIGPLAN International Conference on Functional Programming}},
+pages = {339–347},
+numpages = {9},
+keywords = {deep and shallow embedding, domain-specific languages, folds},
+location = {Gothenburg, Sweden},
+series = {ICFP '14}
+}
+
+@article{dsl,
+author = {Gibbons, Jeremy and Wu, Nicolas},
+title = {{Folding Domain-Specific Languages: Deep and Shallow Embeddings (Functional Pearl)}},
+year = {2014},
+issue_date = {September 2014},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {49},
+number = {9},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/2692915.2628138},
+doi = {10.1145/2692915.2628138},
+abstract = {A domain-specific language can be implemented by embedding within a general-purpose host language. This embedding may be deep or shallow, depending on whether terms in the language construct syntactic or semantic representations. The deep and shallow styles are closely related, and intimately connected to folds; in this paper, we explore that connection.},
+journal = {SIGPLAN Not.},
+month = aug,
+pages = {339–347},
+numpages = {9},
+keywords = {domain-specific languages, deep and shallow embedding, folds}
+}
+
+@article{delim,
+author = {Materzok, Marek and Biernacki, Dariusz},
+title = {{Subtyping Delimited Continuations}},
+year = {2011},
+issue_date = {September 2011},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {46},
+number = {9},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/2034574.2034786},
+doi = {10.1145/2034574.2034786},
+abstract = {We present a type system with subtyping for first-class delimited continuations that generalizes Danvy and Filinski's type system for shift and reset by maintaining explicit information about the types of contexts in the metacontext. We exploit this generalization by considering the control operators known as shift0 and reset0 that can access arbitrary contexts in the metacontext. We use subtyping to control the level of information about the metacontext the expression actually requires and in particular to coerce pure expressions into effectful ones. For this type system we prove strong type soundness and termination of evaluation and we present a provably correct type reconstruction algorithm. We also introduce two CPS translations for shift0 and reset0: one targeting the untyped lambda calculus, and another - type-directed - targeting the simply-typed lambda calculus. The latter translation preserves typability and is selective in that it keeps pure expressions in direct style.},
+journal = {SIGPLAN Not.},
+month = sep,
+pages = {81–93},
+numpages = {13},
+keywords = {subtyping, delimited continuation, continuation-passing style, type system}
+}
+
+@inproceedings{sghmc,
+author = {Chen, Tianqi and Fox, Emily B. and Guestrin, Carlos},
+title = {{Stochastic Gradient Hamiltonian Monte Carlo}},
+year = {2014},
+publisher = {JMLR.org},
+abstract = {Hamiltonian Monte Carlo (HMC) sampling methods provide a mechanism for defining distant proposals with high acceptance probabilities in a Metropolis-Hastings framework, enabling more efficient exploration of the state space than standard random-walk proposals. The popularity of such methods has grown significantly in recent years. However, a limitation of HMC methods is the required gradient computation for simulation of the Hamiltonian dynamical system--such computation is infeasible in problems involving a large sample size or streaming data. Instead, we must rely on a noisy gradient estimate computed from a subset of the data. In this paper, we explore the properties of such a stochastic gradient HMC approach. Surprisingly, the natural implementation of the stochastic approximation can be arbitrarily bad. To address this problem we introduce a variant that uses second-order Langevin dynamics with a friction term that counteracts the effects of the noisy gradient, maintaining the desired target distribution as the invariant distribution. Results on simulated data validate our theory. We also provide an application of our methods to a classification task using neural networks and to online Bayesian matrix factorization.},
+booktitle = {{Proceedings of the 31st International Conference on International Conference on Machine Learning - Volume 32}},
+pages = {II–1683–II–1691},
+location = {Beijing, China},
+series = {ICML'14}
+}
+
+@phdthesis{diff,
+author = {Speelpenning, Bert},
+title = {{Compiling Fast Partial Derivatives of Functions given by Algorithms}},
+year = {1980},
+publisher = {University of Illinois at Urbana-Champaign},
+address = {USA},
+note = {AAI8017989}
+}
+@article{reverse,
+author = {Pearlmutter, Barak A. and Siskind, Jeffrey Mark},
+title = {Reverse-Mode AD in a Functional Framework: Lambda the Ultimate Backpropagator},
+year = {2008},
+issue_date = {March 2008},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {30},
+number = {2},
+issn = {0164-0925},
+url = {https://doi.org/10.1145/1330017.1330018},
+doi = {10.1145/1330017.1330018},
+abstract = {We show that reverse-mode AD (Automatic Differentiation)—a generalized gradient-calculation operator—can be incorporated as a first-class function in an augmented lambda calculus, and therefore into a functional-programming language. Closure is achieved, in that the new operator can be applied to any expression in the augmented language, yielding an expression in that language. This requires the resolution of two major technical issues: (a) how to transform nested lambda expressions, including those with free-variable references, and (b) how to support self application of the AD machinery. AD transformations preserve certain complexity properties, among them that the reverse phase of the reverse-mode AD transformation of a function have the same temporal complexity as the original untransformed function. First-class unrestricted AD operators increase the expressive power available to the numeric programmer, and may have significant practical implications for the construction of numeric software that is robust, modular, concise, correct, and efficient.},
+journal = {ACM Trans. Program. Lang. Syst.},
+month = mar,
+articleno = {7},
+numpages = {36},
+keywords = {Closures, reflection, higher-order functional languages, program transformation, forward-mode AD, higher-order AD, Jacobian, derivatives}
+}
