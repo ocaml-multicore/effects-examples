@@ -41,3 +41,11 @@ $ make
 ```
 
 This builds all of the examples.
+
+## External examples
+
+These are other examples that utilise OCaml effect handlers that are not in this repo:
+
+* [Reactive UI and animation](https://gopiandcode.uk/logs/log-bye-bye-monads-algebraic-effects.html)
+* [Probabilisitic Programming](https://github.com/Arnhav-Datar/EffPPL)
+  + and the [project report](https://github.com/Arnhav-Datar/EffPPL/blob/main/reports/final_report/EffPPL_Report.pdf)
