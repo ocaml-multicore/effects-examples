@@ -8,35 +8,40 @@ Examples to illustrate the use of algebraic effects in OCaml. See
 
 ## Examples
 
-* [A concurrent round-robin scheduler](https://github.com/kayceesrk/ocaml-eff-example/blob/master/sched.ml)
-* [Mutable state](https://github.com/kayceesrk/ocaml-eff-example/blob/master/state.ml)
-* [ML-style refs](https://github.com/kayceesrk/ocaml-eff-example/blob/master/ref.ml)
-* [Transactional state](https://github.com/kayceesrk/ocaml-eff-example/blob/master/transaction.ml)
-* [Asynchronous IO in direct-style](https://github.com/kayceesrk/ocaml-eff-example/blob/master/aio)
-* [Delimcc encoding](https://github.com/kayceesrk/ocaml-eff-example/blob/master/delimcc.ml)
-* [Dynamic wind](https://github.com/kayceesrk/ocaml-eff-example/blob/master/dyn_wind.ml)
-* [Deriving generator from any interator](https://github.com/kayceesrk/ocaml-eff-example/blob/master/generator.ml)
-* [Promises](https://github.com/kayceesrk/ocaml-eff-example/blob/master/promises.ml)
-* [Backtracking N-Queens](https://github.com/kayceesrk/ocaml-eff-example/blob/master/queens.ml)
-* [Monadic reflection](https://github.com/kayceesrk/ocaml-eff-example/blob/master/reify_reflect.ml)
-* [MVars](https://github.com/kayceesrk/ocaml-eff-example/blob/master/mvar/MVar.ml)
-* [Chameneos-redux](https://github.com/kayceesrk/ocaml-eff-example/blob/master/mvar/chameneos.ml)
-* [Memoization](https://github.com/kayceesrk/ocaml-eff-example/blob/master/memo.ml)
-* [Nondeterminism](https://github.com/kayceesrk/ocaml-eff-example/blob/master/nondeterminism.ml)
-* [A mathematical game: Nim](https://github.com/kayceesrk/ocaml-eff-example/blob/master/nim.ml)
-* [Message-passing pipeline: Sieve of Eratostheneses](https://github.com/kayceesrk/ocaml-eff-example/blob/master/eratosthenes.ml)
-* [Deep pipes](https://github.com/kayceesrk/ocaml-eff-example/blob/master/pipes.ml)
-* [Non termination from effects](https://github.com/kayceesrk/ocaml-eff-example/blob/master/loop.ml)
-* [Continuation cloning is tricky](https://github.com/kayceesrk/ocaml-eff-example/blob/master/clone_is_tricky.ml)
-* [A solution to the Same Fringe Problem](https://github.com/kayceesrk/ocaml-eff-example/blob/master/fringe.ml)
-* [Reverse-mode Algorithmic Differentiation](https://github.com/kayceesrk/effects-examples/blob/master/algorithmic_differentiation.ml)
+* [A concurrent round-robin scheduler](https://github.com/ocaml-multicore/effects-examples/blob/master/sched.ml)
+* [Mutable state](https://github.com/ocaml-multicore/effects-examples/blob/master/state.ml)
+* [ML-style refs](https://github.com/ocaml-multicore/effects-examples/blob/master/ref.ml)
+* [Transactional state](https://github.com/ocaml-multicore/effects-examples/blob/master/transaction.ml)
+* [Asynchronous IO in direct-style](https://github.com/ocaml-multicore/effects-examples/blob/master/aio)
+* [Dynamic wind](https://github.com/ocaml-multicore/effects-examples/blob/master/dyn_wind.ml)
+* [Deriving generator from any interator](https://github.com/ocaml-multicore/effects-examples/blob/master/generator.ml)
+* [Promises](https://github.com/ocaml-multicore/effects-examples/blob/master/promises.ml)
+* [Monadic reflection](https://github.com/ocaml-multicore/effects-examples/blob/master/reify_reflect.ml)
+* [MVars](https://github.com/ocaml-multicore/effects-examples/blob/master/mvar/MVar.ml)
+* [Chameneos-redux](https://github.com/ocaml-multicore/effects-examples/blob/master/mvar/chameneos.ml)
+* [Message-passing pipeline: Sieve of Eratostheneses](https://github.com/ocaml-multicore/effects-examples/blob/master/eratosthenes.ml)
+* [Deep pipes](https://github.com/ocaml-multicore/effects-examples/blob/master/pipes.ml)
+* [Non termination from effects](https://github.com/ocaml-multicore/effects-examples/blob/master/loop.ml)
+* [Continuation cloning is tricky](https://github.com/ocaml-multicore/effects-examples/blob/master/clone_is_tricky.ml)
+* [A solution to the Same Fringe Problem](https://github.com/ocaml-multicore/effects-examples/blob/master/fringe.ml)
+* [Reverse-mode Algorithmic Differentiation](https://github.com/ocaml-multicore/effects-examples/blob/master/algorithmic_differentiation.ml)
+
+The original implementation of Multicore OCaml allowed a user to `Obj.clone_continuation`. This has been removed, the examples that used this have been archived into the `multishot` directory. [See this conversation about the removal of this feature](https://discuss.ocaml.org/t/multi-shot-continuations-gone-forever/9072).
+
+* [Delimcc encoding](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/delimcc.ml)
+* [Nondeterminism](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/nondeterminism.ml)
+* [Backtracking N-Queens](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/queens.ml)
+* [Memoization](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/memo.ml)
+* [A mathematical game: Nim](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/nim.ml)
 
 ## Running the examples
 
-Follow the instructions to [install Multicore OCaml](https://github.com/ocaml-multicore/multicore-opam#install-multicore-ocaml). Then,
+To run the examples with Multicore OCaml, be sure to install [Opam with these instructions](https://opam.ocaml.org/doc/Install.html).
 
 ```bash
-# The OCaml 5 compatible version of dune and lwt are not yet released
+# After cloning this repository, create a 5.00 switch
+$ opam switch create 5.00+trunk
+# The OCaml 5 compatible version of dune and lwt must be pinned
 $ opam pin -y dune git+https://github.com/ocaml/dune
 $ opam pin -y lwt git+https://github.com/patricoferris/lwt#5.00
 $ make
