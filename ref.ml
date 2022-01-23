@@ -32,14 +32,14 @@ module State : STATE = struct
 
   let run f =
     try_with f () {
-      effc = fun e ->
+      effc = fun (type a) (e : a eff) ->
         match e with 
-        | Ref init -> Some (fun k ->
+        | Ref init -> Some (fun (k : (a, _) continuation) ->
           (* trick to name the existential type introduced by the matching: *)
-          (init, k) |> fun (type a) (init, k : a * (a t, _) continuation) ->
+          (init, k) |> fun (type b) (init, k : b * (b t, _) continuation) ->
           let module R =
             struct
-              type elt = a
+              type elt = b
               type _ eff += Get : elt eff
               type _ eff += Set : elt -> unit eff
             end
@@ -48,9 +48,9 @@ module State : STATE = struct
           match_with (continue k) (module R) {
             retc = (fun result -> fun _x -> result);
             exnc = raise;
-            effc = fun e ->
+            effc = fun (type c) (e : c eff) ->
               match e with
-              | R.Get -> Some (fun (k : (a, a -> a t) continuation) -> fun x -> continue k x x)
+              | R.Get -> Some (fun (k : (c, _) continuation) -> fun (x : b) -> continue k x x)
               | R.Set y -> Some (fun k -> fun _x -> continue k () y)
               | _ -> None
           })
