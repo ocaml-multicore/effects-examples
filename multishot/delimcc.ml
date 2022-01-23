@@ -1,5 +1,7 @@
 (* One-shot multi-prompt delimited control :
    http://okmij.org/ftp/continuations/implementations.html *)
+open Effect
+open Effect.Deep
 
 module type S = sig
  type 'a prompt
@@ -29,10 +31,16 @@ module M : S = struct
  }
 
  let new_prompt (type a) () : a prompt =
-   let module M = struct effect Prompt : (('b,a) subcont -> a) -> 'b end in
+   let module M = struct type _ eff += Prompt : (('b, a) subcont -> a) -> 'b eff end in
    let take f  = perform (M.Prompt f) in
-   let push f  = match f () with  v -> v | effect (M.Prompt f) k -> f k in
-   { take; push }
+   let push f  = try_with f () {
+     effc = fun (type a) (e : a eff) -> 
+      match e with 
+      | M.Prompt f -> Some (fun k -> f k)
+      | _ -> None
+   }
+   in
+    { take; push }
 
  let push_prompt prompt = prompt.push
  let take_subcont prompt = prompt.take

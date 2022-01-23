@@ -49,12 +49,12 @@ let arrive (mpv : mp MVar.t) (finish : (int * int) MVar.t) (ch : chameneos) =
         MVar.put mpv w >>
         MVar.put finish (t,b)
     | Nobody q ->
-        Lwt_main.yield () >>
+        Lwt.pause () >>
         MVar.put mpv (Somebody (q, ch, waker)) >>
         MVar.take waker >>= fun w' ->
         go (t+1) @@ inc w' b
     | Somebody (q, ch', waker') ->
-        Lwt_main.yield () >>
+        Lwt.pause () >>
         MVar.put mpv (Nobody (q - 1)) >>
         let c'' = Color.complement !ch !ch' in
         ch := c'';

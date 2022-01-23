@@ -1,4 +1,6 @@
 open Printf
+open Effect
+open Effect.Deep
 
 type bottom
 
@@ -13,18 +15,23 @@ end
 module Txn : TXN = struct
   type 'a t = 'a ref
 
-  effect Update : 'a t * 'a -> unit
+  type _ eff += Update : 'a t * 'a -> unit eff
 
   let atomically f =
     let comp =
-      match f () with
-      | x -> (fun _ -> x)
-      | exception e -> (fun rb -> rb (); raise e)
-      | effect (Update (r,v)) k -> (fun rb ->
-          let old_v = !r in
-          r := v;
-          continue k () (fun () -> r := old_v; rb ()))
-    in comp (fun () -> ())
+      match_with f () {
+        retc = (fun x -> fun _ -> x);
+        exnc = (fun e -> (fun rb -> rb (); raise e));
+        effc = fun (type a) (e : a eff) ->
+          match e with
+          | Update (r, v) -> Some (fun (k : (a, _) continuation) -> (fun rb ->
+            let old_v = !r in
+            r := v;
+            continue k () (fun () -> r := old_v; rb ())))
+          | _ -> None
+      }
+    in 
+      comp (fun () -> ())
 
   let ref = ref
   let (!) = (!)

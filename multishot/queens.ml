@@ -1,4 +1,7 @@
-effect Select : 'a list -> 'a
+open Effect
+open Effect.Deep
+
+type _ eff += Select : 'a list -> 'a eff
 
 let rec filter p = function
   | [] -> []
@@ -16,7 +19,7 @@ let available x qs l =
   filter (fun y -> forall (no_attack (x,y)) qs) l
 
 let find_solution n =
-  try
+  let run n =
     let l = ref [] in
     for i = n downto 1 do
       l := i::!l;
@@ -26,15 +29,20 @@ let find_solution n =
         let y = perform @@ Select (available x qs !l) in
         place (x+1) ((x, y) :: qs)
     in place 1 []
-  with
-  | effect (Select lst) k ->
-      let rec loop = function
-        | [] -> None
-        | x::xs ->
-            match continue (Obj.clone_continuation k) x with
-            | None -> loop xs
-            | Some x -> Some x
-      in loop lst
+  in
+  try_with run n {
+    effc = fun (type a) (e : a eff) ->
+      match e with
+      | Select lst -> Some (fun k ->
+        let rec loop = function
+          | [] -> None
+          | x::xs ->
+              match continue (Obj.clone_continuation k) x with
+              | None -> loop xs
+              | Some x -> Some x
+        in loop lst)
+      | _ -> None
+  }
 
 let main () =
   let n =

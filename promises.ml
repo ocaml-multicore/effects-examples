@@ -1,3 +1,6 @@
+open Effect
+open Effect.Deep
+
 module type Applicative = sig
   type 'a t
   val pure  : 'a -> 'a t
@@ -28,8 +31,8 @@ module Promise : Promise = struct
 
   type 'a t = 'a status ref
 
-  effect Fork : (unit -> 'a) -> 'a t
-  effect Wait : 'a t -> unit
+  type _ eff += Fork : (unit -> 'a) -> 'a t eff
+  type _ eff += Wait : 'a t -> unit eff
 
   let fork f = perform (Fork f)
 
@@ -109,13 +112,17 @@ module Promise : Promise = struct
     let run_q = Queue.create () in
     let rec spawn : 'a. 'a status ref -> (unit -> 'a) -> unit =
       fun sr f ->
-        match f () with
-        | v -> finish run_q sr v; dequeue run_q
-        | exception e -> abort run_q sr e; dequeue run_q
-        | effect (Wait sr) k -> wait sr k; dequeue run_q
-        | effect (Fork f) k ->
-            let sr = mk_status () in
-            enqueue run_q k sr; spawn sr f
+        match_with f () {
+          retc = (fun v -> finish run_q sr v; dequeue run_q);
+          exnc = (fun e -> abort run_q sr e; dequeue run_q);
+          effc = fun (type a) (e : a eff) ->
+            match e with
+            | Wait sr -> Some (fun (k : (a, _) continuation) -> wait sr k; dequeue run_q)
+            | Fork f -> Some (fun k ->
+              let sr = mk_status () in
+              enqueue run_q k sr; spawn sr f)
+            | _ -> None
+        }
     in
     let sr = mk_status () in
     spawn sr main;

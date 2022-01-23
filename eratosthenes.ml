@@ -1,4 +1,6 @@
 (** Message-passing parallel prime number generation using Sieve of Eratosthenes **)
+open Effect
+open Effect.Deep
 
 (* A message is either a [Stop] signal or a [Candidate] prime number *)
 type message = Stop | Candidate of int
@@ -10,19 +12,19 @@ let string_of_msg = function
 (** Process primitives **)
 type pid = int
 
-effect Spawn : (pid -> unit) -> pid
+type _ eff += Spawn : (pid -> unit) -> pid eff
 let spawn p = perform (Spawn p)
 
-effect Yield : unit
+type _ eff += Yield : unit eff
 let yield () = perform Yield
 
 (** Communication primitives **)
-effect Send : pid * message -> unit
+type _ eff += Send : pid * message -> unit eff
 let send pid data =
   perform (Send (pid, data));
   yield ()
 
-effect Recv : pid -> message option
+type _ eff += Recv : pid -> message option eff
 let rec recv pid =
   match perform (Recv pid) with
   | Some m -> m
@@ -72,14 +74,17 @@ let mailbox f =
     let (msg, mb) = Mailbox.pop pid !mailbox in
     mailbox := mb; msg
   in
-  match f () with
-  | v -> v
-  | effect (Send (pid, msg)) k ->
-     mailbox := Mailbox.push pid msg !mailbox;
-     continue k ()
-  | effect (Recv who) k ->
-     let msg = lookup who in
-     continue k msg
+  try_with f () {
+    effc = fun (type a) (e : a eff) ->
+      match e with
+      | (Send (pid, msg)) -> Some (fun (k : (a, _) continuation) ->
+        mailbox := Mailbox.push pid msg !mailbox;
+        continue k ())
+      | (Recv who) -> Some (fun k ->
+          let msg = lookup who in
+          continue k msg)
+      | _ -> None
+  }
 
 (** Process handler
     Slightly modified version of sched.ml **)
@@ -93,12 +98,17 @@ let run main () =
   let pid = ref (-1) in
   let rec spawn f =
     pid := 1 + !pid;
-    match f !pid with
-    | () -> dequeue ()
-    | effect Yield k ->
-       enqueue (fun () -> continue k ()); dequeue ()
-    | effect (Spawn p) k ->
-       enqueue (fun () -> continue k !pid); spawn p
+    match_with f !pid {
+      retc = (fun () -> dequeue ());
+      exnc = (fun e -> raise e);
+      effc = fun (type a) (e : a eff) ->
+        match e with
+        | Yield -> Some (fun (k : (a, _) continuation) ->
+          enqueue (fun () -> continue k ()); dequeue ())
+        | Spawn p -> Some (fun k ->
+          enqueue (fun () -> continue k !pid); spawn p)
+        | _ -> None
+    }
   in
   spawn main
 

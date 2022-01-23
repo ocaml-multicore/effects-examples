@@ -1,6 +1,8 @@
 (* Reverse-mode Algorithmic differentiation using effect handlers.
    Adapted from https://twitter.com/tiarkrompf/status/963314799521222656.
    See https://openreview.net/forum?id=SJxJtYkPG for more information. *)
+open Effect
+open Effect.Deep
 
 module F : sig
   type t
@@ -14,24 +16,29 @@ end = struct
 
   let mk v = {v; d = 0.0}
 
-  effect Add : t * t -> t
-  effect Mult : t * t -> t
+  type _ eff += Add : t * t -> t eff
+  type _ eff += Mult : t * t -> t eff
 
   let run f =
-    ignore (match f () with
-    | r -> r.d <- 1.0; r
-    | effect (Add(a,b)) k ->
-        let x = {v = a.v +. b.v; d = 0.0} in
-        ignore (continue k x);
-        a.d <- a.d +. x.d;
-        b.d <- b.d +. x.d;
-        x
-    | effect (Mult(a,b)) k ->
-        let x = {v = a.v *. b.v; d = 0.0} in
-        ignore (continue k x);
-        a.d <- a.d +. (b.v *. x.d);
-        b.d <- b.d +. (a.v *. x.d);
-        x)
+    ignore (match_with f () {
+      retc = (fun r -> r.d <- 1.0; r);
+      exnc = raise;
+      effc = fun (type a) (e : a eff) ->
+        match e with
+        | Add (a, b) -> Some (fun (k : (a, _) continuation) ->
+            let x = {v = a.v +. b.v; d = 0.0} in
+            ignore (continue k x);
+            a.d <- a.d +. x.d;
+            b.d <- b.d +. x.d;
+            x)
+        | Mult(a,b) -> Some (fun k ->
+            let x = {v = a.v *. b.v; d = 0.0} in
+            ignore (continue k x);
+            a.d <- a.d +. (b.v *. x.d);
+            b.d <- b.d +. (a.v *. x.d);
+            x)
+        | _ -> None
+      })
 
   let grad f x =
     let x = mk x in

@@ -6,7 +6,7 @@ open Sched
 
 let mv = create_empty ()
 
-let fork f = perform @@ Fork f
+let fork f = Effect.perform @@ Fork f
 
 let put x =
   (printf "Before put: %s\n" x;

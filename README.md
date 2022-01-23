@@ -36,7 +36,9 @@ Examples to illustrate the use of algebraic effects in OCaml. See
 Follow the instructions to [install Multicore OCaml](https://github.com/ocaml-multicore/multicore-opam#install-multicore-ocaml). Then,
 
 ```bash
-$ opam install dune lwt
+# The OCaml 5 compatible version of dune and lwt are not yet released
+$ opam pin -y dune git+https://github.com/ocaml/dune
+$ opam pin -y lwt git+https://github.com/patricoferris/lwt#5.00
 $ make
 ```
 

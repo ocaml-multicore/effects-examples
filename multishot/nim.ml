@@ -13,6 +13,8 @@
   - A player may pick between 1-3 sticks at each turn.
   - The player, who takes the last stick, wins.
  *)
+open Effect
+open Effect.Deep
 
 (* Data type modelling the players *)
 type player = Alice | Bob
@@ -25,7 +27,7 @@ let string_of_player = function
 (* The [move] operation is centric to the game. The operation is
 parameterised by the active player and the number of sticks left in
 the game. *)
-effect Move : (player * int) ->	int
+type _ eff += Move : (player * int) -> int eff
 let move p n = perform (Move (p, n))
 
 (* The game is modelled as two mutually recursive functions *)
@@ -45,10 +47,12 @@ let game n =
 (** Encoding player strategies **)
 (* The strategy handler assigns strategy s(p) to player [p] *)
 let strategy (s : player -> (int -> (int, player) continuation -> player)) m =
-  try
+  try_with
     m ()
-  with
-  | effect (Move (p,n)) k -> s p n k
+  { effc = fun (type a) (e : a eff) -> 
+      match e with
+      | Move (p, n) -> Some (fun (k : (a, player) continuation) -> s p n k)
+      | _ -> None }
 
 (* Simple (and naive) strategy *)
 let ns _ k = continue k 1
@@ -127,9 +131,14 @@ let reify p n k =
   Take (p, subtrees)
 
 let gametree m =
-  match m () with
-  | v -> Winner v
-  | effect (Move (p,n)) k -> reify p n k
+  match_with m () {
+    retc = (fun v -> Winner v);
+    exnc = (fun e -> raise e);
+    effc = fun (type a) (e : a eff) ->
+      match e with 
+      | Move (p, n) -> Some (fun (k : (a, _) continuation) -> reify p n k)
+      | _ -> None
+  }
 
 (** Cheat detection via effect forwarding **)
 (* We model Cheat as an exception parameterised by the player (the
@@ -152,8 +161,12 @@ let check_move p n k =
   else continue k m
 
 let checker m =
-  try m () with
-  | effect (Move (p,n)) k -> check_move p n k
+  try_with m () {
+    effc = fun (type a) (e : a eff) ->
+      match e with
+      | Move (p, n) -> Some (fun (k : (a, _) continuation) -> check_move p n k)
+      | _ -> None
+  }
 
 (* The following exception handler reports cheaters *)
 let cheat_report m =
@@ -171,14 +184,18 @@ let cheat_lose m =
 let (-<-) h g = fun m -> h (fun () -> g m)
 
 (** Choosing between strategies **)
-effect Choose : bool
+type _ eff += Choose : bool eff
 let choose () = perform Choose
 
 (* Flip a coin to decide whether to interpret Choose as true or
 false *)
 let coin m =
-  try m () with
-  | effect Choose k -> continue k (Random.float 1.0 > 0.5)
+  try_with m () {
+    effc = fun (type a) (e : a eff) ->
+      match e with
+      | Choose -> Some (fun (k : (a, _) continuation) -> continue k (Random.float 1.0 > 0.5))
+      | _ -> None
+  }
 
 let bob_maybe_cheats m =
   let h = if choose ()
@@ -200,22 +217,30 @@ module type STATE = sig
   val run : (unit -> 'a) -> init:t -> 'a
 end
 
+(* From: https://gist.github.com/kayceesrk/3c307d0340fbfc68435d4769ad447e10 *)
 module State (S : sig type t end) : STATE with type t = S.t = struct
   type t = S.t
 
-  effect Put : t -> unit
+  type _ eff += Put : t -> unit eff
   let put v = perform (Put v)
 
-  effect Get : t
+  type _ eff += Get : t eff
   let get () = perform Get
 
-  let run f ~init =
+  let run (type a) (f : unit -> a) ~init : a =
     let comp =
-      match f () with
-      | x -> (fun s -> x)
-      | effect (Put s') k -> (fun s -> continue k () s')
-      | effect Get k      -> (fun s -> continue k s s)
-    in comp init
+      match_with f ()
+      { retc = (fun x -> (fun s -> (s, x)));
+        exnc = (fun e -> raise e);
+        effc = fun (type b) (e : b eff) ->
+                 match e with
+                 | Get -> Some (fun (k : (b, t -> (t * a)) continuation) ->
+                     (fun (s : t) -> continue k s s))
+                 | Put s' -> Some (fun k ->
+                     (fun _s -> continue k () s'))
+                 | e -> None
+       }
+    in snd @@ comp init
 end
 
 type gamestate = (player * int) list
