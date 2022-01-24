@@ -26,7 +26,7 @@ Examples to illustrate the use of algebraic effects in OCaml. See
 * [A solution to the Same Fringe Problem](https://github.com/ocaml-multicore/effects-examples/blob/master/fringe.ml)
 * [Reverse-mode Algorithmic Differentiation](https://github.com/ocaml-multicore/effects-examples/blob/master/algorithmic_differentiation.ml)
 
-The original implementation of Multicore OCaml allowed a user to `Obj.clone_continuation`. This has been removed, the examples that used this have been archived into the `multishot` directory. [See this conversation about the removal of this feature](https://discuss.ocaml.org/t/multi-shot-continuations-gone-forever/9072).
+The original implementation of Multicore OCaml allowed a user to `Obj.clone_continuation`. This has been removed, the examples that used this are in the `multishot` directory. [See this conversation about the removal of this feature](https://discuss.ocaml.org/t/multi-shot-continuations-gone-forever/9072). They now use the [ocaml-multicont](https://github.com/dhil/ocaml-multicont) library.
 
 * [Delimcc encoding](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/delimcc.ml)
 * [Nondeterminism](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/nondeterminism.ml)
@@ -44,6 +44,7 @@ $ opam switch create 5.00+trunk
 # The OCaml 5 compatible version of dune and lwt must be pinned
 $ opam pin -y dune git+https://github.com/ocaml/dune
 $ opam pin -y lwt git+https://github.com/patricoferris/lwt#5.00
+$ opam pin -y git+https://github.com/dhil/ocaml-multicont#1cacd132773aa947e8ce679434fe8cc7fe2f1aa1
 $ make
 ```
 

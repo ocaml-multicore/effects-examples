@@ -49,11 +49,11 @@ end = struct
         ()
         { effc = fun (type a) (e : a eff) ->
           match e with
-          | Cut -> Some (fun k ->
+          | Cut -> Some (fun (k : (a, _) continuation) ->
             match !cache with
             | Some c ->
                 let rec save_cont k () =
-                  c.cont <- save_cont (Obj.clone_continuation k);
+                  c.cont <- save_cont (Multicont.Deep.clone_continuation k);
                   continue k ()
                 in
                 save_cont k ()

@@ -23,6 +23,6 @@ let _ =
   try_with run () { 
     effc = fun (type a) (e : a eff) ->
       match e with
-      | Bar -> Some (fun (k : (a, _) continuation) -> continue (Obj.clone_continuation k) (); continue k ())
+      | Bar -> Some (fun (k : (a, _) continuation) -> continue (Multicont.Deep.clone_continuation k) (); continue k ())
       | _ -> None
   }

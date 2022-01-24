@@ -1,29 +1,29 @@
-; Disabled, see comments in memo.ml
-; (executables
-;  (names memo)
-;  (modules memo))
+(executables
+ (names memo)
+ (modules memo)
+ (libraries multicont))
 
-; Also disabled because there is no continuation cloning
-; (executables
-;  (names nondeterminism)
-;  (modules nondeterminism))
+(executables
+ (names nondeterminism)
+ (modules nondeterminism)
+ (libraries multicont))
 
-; Also disabled because there is no continuation cloning
-; (executables
-;  (names nim)
-;  (modules nim))
+(executables
+ (names nim)
+ (modules nim)
+ (libraries multicont))
 
-; Also disabled because there is no continuation cloning
-; (executables
-;  (names queens)
-;  (modules queens))
+(executables
+ (names queens)
+ (modules queens)
+ (libraries multicont))
 
-; Also disabled because there is no continuation cloning
-; (executables
-;  (names clone_is_tricky)
-;  (modules clone_is_tricky))
+(executables
+ (names clone_is_tricky)
+ (modules clone_is_tricky)
+ (libraries multicont))
 
-; Also disabled because there is no continuation cloning
-; (executables
-;  (names delimcc)
-;  (modules delimcc))
+(executables
+ (names delimcc)
+ (modules delimcc)
+ (libraries multicont))

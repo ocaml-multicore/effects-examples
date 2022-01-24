@@ -45,7 +45,7 @@ module M : S = struct
  let push_prompt prompt = prompt.push
  let take_subcont prompt = prompt.take
  let push_subcont k v =
-   let k' = Obj.clone_continuation k in
+   let k' = Multicont.Deep.clone_continuation k in
    continue k' v
 
  (** For the details of the implementation of control and shift0, see

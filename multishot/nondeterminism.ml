@@ -36,7 +36,7 @@ let all_results m =
     exnc = raise;
     effc = fun (type a) (e : a eff) ->
       match e with
-      | Choose -> Some (fun (k : (a, _) continuation) -> (continue k true) @ (continue (Obj.clone_continuation k) false))
+      | Choose -> Some (fun (k : (a, _) continuation) -> (continue k true) @ (continue (Multicont.Deep.clone_continuation k) false))
       | _ -> None
   }
     
