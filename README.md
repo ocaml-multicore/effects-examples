@@ -40,15 +40,16 @@ To run the examples with Multicore OCaml, be sure to install [Opam with these in
 
 ```bash
 # After cloning this repository, create a 5.00 switch
-$ opam switch create 5.00+trunk
-# The OCaml 5 compatible version of dune and lwt must be pinned
-$ opam pin -y dune git+https://github.com/ocaml/dune
-$ opam pin -y lwt git+https://github.com/patricoferris/lwt#5.00
-$ opam pin -y git+https://github.com/dhil/ocaml-multicont#1cacd132773aa947e8ce679434fe8cc7fe2f1aa1
+$ opam switch create 5.00.0+trunk
+$ opam install . --deps-only
 $ make
 ```
 
-This builds all of the examples.
+This builds all of the examples. If you want to run a single executable that is build with `dune` you can run:
+
+```
+$ dune exec -- ./<executable_name>.exe
+```
 
 ## External examples
 
