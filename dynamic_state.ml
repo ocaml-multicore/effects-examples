@@ -15,8 +15,8 @@ module LocalState (R : sig type t end) = struct
 end
 
 module type StateOps = sig
-  type reff
-  effect New : int -> reff
+  type rEffect.t
+  effect New : int -> rEffect.t
   effect Get : reff -> int
   effect Put : reff * int -> unit
 end
@@ -136,7 +136,7 @@ let test3 () =
    continuations. *)
 type 'a reff = < get : 'a; put : 'a -> unit; internals : (module GetPutOps with type t = 'a) >
 
-effect New : 'a -> 'a reff
+effect New : 'a -> 'a rEffect.t
 effect Choice : bool
 
 let run4 main =

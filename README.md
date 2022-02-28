@@ -40,7 +40,8 @@ To run the examples with Multicore OCaml, be sure to install [Opam with these in
 
 ```bash
 # After cloning this repository, create a 5.00 switch
-$ opam switch create 5.00.0+trunk
+$ opam update
+$ opam switch create 5.0.0+trunk
 $ opam install . --deps-only
 $ make
 ```

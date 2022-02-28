@@ -16,12 +16,12 @@ module State : STATE = struct
 
   module type T = sig
     type elt
-    type _ eff += Get : elt eff
-    type _ eff += Set : elt -> unit eff
+    type _ Effect.t += Get : elt Effect.t
+    type _ Effect.t += Set : elt -> unit Effect.t
   end
   type 'a t = (module T with type elt = 'a)
 
-  type _ eff += Ref : 'a -> 'a t eff
+  type _ Effect.t += Ref : 'a -> 'a t Effect.t
   let ref v = perform (Ref v)
 
   let (!)  : type a. a t -> a =
@@ -32,7 +32,7 @@ module State : STATE = struct
 
   let run f =
     try_with f () {
-      effc = fun (type a) (e : a eff) ->
+      effc = fun (type a) (e : a Effect.t) ->
         match e with 
         | Ref init -> Some (fun (k : (a, _) continuation) ->
           (* trick to name the existential type introduced by the matching: *)
@@ -40,15 +40,15 @@ module State : STATE = struct
           let module R =
             struct
               type elt = b
-              type _ eff += Get : elt eff
-              type _ eff += Set : elt -> unit eff
+              type _ Effect.t += Get : elt Effect.t
+              type _ Effect.t += Set : elt -> unit Effect.t
             end
           in
           init |>
           match_with (continue k) (module R) {
             retc = (fun result -> fun _x -> result);
             exnc = raise;
-            effc = fun (type c) (e : c eff) ->
+            effc = fun (type c) (e : c Effect.t) ->
               match e with
               | R.Get -> Some (fun (k : (c, _) continuation) -> fun (x : b) -> continue k x x)
               | R.Set y -> Some (fun k -> fun _x -> continue k () y)

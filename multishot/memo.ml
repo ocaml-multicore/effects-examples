@@ -29,7 +29,7 @@ module Memo : sig
 
 end = struct
 
-  type _ eff += Cut : unit eff
+  type _ Effect.t += Cut : unit Effect.t
   let cut () = perform Cut
 
   type ('a,'b) cache_entry =
@@ -47,7 +47,7 @@ end = struct
             cache := Some {input = x; cont = fun () -> failwith err_msg};
             f x) 
         ()
-        { effc = fun (type a) (e : a eff) ->
+        { effc = fun (type a) (e : a Effect.t) ->
           match e with
           | Cut -> Some (fun (k : (a, _) continuation) ->
             match !cache with

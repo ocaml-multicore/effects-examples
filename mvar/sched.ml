@@ -1,12 +1,12 @@
 open Effect
 open Effect.Deep
 
-type _ eff += Fork    : (unit -> unit) -> unit eff
-type _ eff += Yield   : unit eff
+type _ Effect.t += Fork    : (unit -> unit) -> unit Effect.t
+type _ Effect.t += Yield   : unit Effect.t
 
 type 'a cont = ('a,unit) continuation
-type _ eff += Suspend : ('a cont -> unit) -> 'a eff
-type _ eff += Resume  : ('a cont * 'a) -> unit eff
+type _ Effect.t += Suspend : ('a cont -> unit) -> 'a Effect.t
+type _ Effect.t += Resume  : ('a cont * 'a) -> unit Effect.t
 
 let run main =
   let run_q = Queue.create () in
@@ -21,7 +21,7 @@ let run main =
     match_with f () {
       retc = dequeue;
       exnc = raise;
-      effc = fun (type a) (e : a eff) ->
+      effc = fun (type a) (e : a Effect.t) ->
         match e with
         | Yield -> Some (fun (k : (a, _) continuation) -> enqueue k (); dequeue ())
         | Fork f -> Some (fun k -> enqueue k (); spawn f)

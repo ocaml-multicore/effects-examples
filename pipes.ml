@@ -4,10 +4,10 @@ open Effect
 open Effect.Deep
 
 (* We specialise our pipes to work only with integers *)
-type _ eff += Await : int eff
+type _ Effect.t += Await : int Effect.t
 let await () = perform Await
 
-type _ eff += Yield : int -> unit eff
+type _ Effect.t += Yield : int -> unit Effect.t
 let yield s = perform (Yield s)
 
 type prod = Prod of (unit -> (cons -> unit))
@@ -20,7 +20,7 @@ let up m =
   match_with m () {
     retc = (fun v -> fun _ -> v);
     exnc = raise;
-    effc = fun (type a) (e : a eff) ->
+    effc = fun (type a) (e : a Effect.t) ->
       match e with
       | Yield s -> Some (fun (k : (a, _) continuation) ->
         fun (Cons cons) ->
@@ -37,7 +37,7 @@ let down m =
   match_with m () {
     retc = (fun v -> fun _ -> v);
     exnc = raise;
-    effc = fun (type a) (e : a eff) ->
+    effc = fun (type a) (e : a Effect.t) ->
       match e with
       | Await -> Some (fun (k : (a, _) continuation) ->
         fun (Prod prod) ->

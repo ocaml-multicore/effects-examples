@@ -14,10 +14,10 @@ module State (S : sig type t end) : STATE with type t = S.t = struct
 
   type t = S.t
 
-  type _ eff += Put : t -> unit eff
+  type _ Effect.t += Put : t -> unit Effect.t
   let put v = perform (Put v)
 
-  type _ eff += Get : t eff
+  type _ Effect.t += Get : t Effect.t
   let get () = perform Get
 
   let run (type a) (f : unit -> a) ~init : t * a =
@@ -25,7 +25,7 @@ module State (S : sig type t end) : STATE with type t = S.t = struct
       match_with f ()
       { retc = (fun x -> (fun s -> (s, x)));
         exnc = (fun e -> raise e);
-        effc = fun (type b) (e : b eff) ->
+        effc = fun (type b) (e : b Effect.t) ->
                  match e with
                  | Get -> Some (fun (k : (b, t -> (t * a)) continuation) ->
                      (fun (s : t) -> continue k s s))

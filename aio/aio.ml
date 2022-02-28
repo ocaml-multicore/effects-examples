@@ -12,12 +12,12 @@ type file_descr = Unix.file_descr
 type sockaddr = Unix.sockaddr
 type msg_flag = Unix.msg_flag
 
-type _ eff += Fork  : (unit -> unit) -> unit eff
-type _ eff += Yield : unit eff
-type _ eff += Accept : file_descr -> (file_descr * sockaddr) eff
-type _ eff += Recv : file_descr * bytes * int * int * msg_flag list -> int eff
-type _ eff += Send : file_descr * bytes * int * int * msg_flag list -> int eff
-type _ eff += Sleep : float -> unit eff
+type _ Effect.t += Fork  : (unit -> unit) -> unit Effect.t
+type _ Effect.t += Yield : unit Effect.t
+type _ Effect.t += Accept : file_descr -> (file_descr * sockaddr) Effect.t
+type _ Effect.t += Recv : file_descr * bytes * int * int * msg_flag list -> int Effect.t
+type _ Effect.t += Send : file_descr * bytes * int * int * msg_flag list -> int Effect.t
+type _ Effect.t += Sleep : float -> unit Effect.t
 
 let fork f =
   perform (Fork f)
@@ -172,7 +172,7 @@ let run main =
       exnc = (fun exn ->
         print_string (Printexc.to_string exn);
         schedule st);
-      effc = fun (type a) (e : a eff) ->
+      effc = fun (type a) (e : a Effect.t) ->
         match e with
         | Yield -> Some (fun (k : (a, _) continuation) ->
             enqueue_thread st k ();

@@ -54,15 +54,14 @@ module Tree : TREE = struct
   (* val to_gen : 'a t -> (unit -> 'a option) *)
   let to_gen (type a) (t : a t) =
     let module M = struct 
-      open Effect
-      type _ eff += Next : a -> unit eff 
+      type _ Effect.t += Next : a -> unit Effect.t
     end in
     let open M in
     let rec step = ref (fun () ->
       try_with
        (fun t -> iter (fun x -> perform (Next x)) t; None)
        t 
-       { effc = fun (type a) (e : a eff) -> 
+       { effc = fun (type a) (e : a Effect.t) -> 
         match e with 
         | Next v -> 
           Some (fun (k : (a, _) continuation) -> 

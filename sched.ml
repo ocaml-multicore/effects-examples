@@ -1,8 +1,8 @@
 open Effect
 open Effect.Deep
 
-type _ eff += Fork : (unit -> unit) -> unit eff
-type _ eff += Yield : unit eff
+type _ Effect.t += Fork : (unit -> unit) -> unit Effect.t
+type _ Effect.t += Yield : unit Effect.t
 
 let fork f = perform (Fork f)
 let yield () = perform Yield
@@ -22,7 +22,7 @@ let run main =
       exnc = (fun e -> 
         print_string (Printexc.to_string e);
         dequeue ());
-      effc = fun (type a) (e : a eff) ->
+      effc = fun (type a) (e : a Effect.t) ->
         match e with
           | Yield ->
             Some (fun (k : (a, unit) continuation) -> enqueue k; dequeue ())

@@ -9,7 +9,7 @@ let dynamic_wind before_thunk thunk after_thunk =
     match_with thunk () {
       retc = Fun.id;
       exnc = (fun e -> after_thunk (); raise e);
-      effc = fun (type a) (e : a eff) ->
+      effc = fun (type a) (e : a Effect.t) ->
         Some (fun (k : (a, _) continuation) ->
           after_thunk ();
           let res' = perform e in
@@ -20,7 +20,7 @@ let dynamic_wind before_thunk thunk after_thunk =
   after_thunk ();
   res
 
-type _ eff += E : unit eff
+type _ Effect.t += E : unit Effect.t
 
 let () =
   let bt () = Printf.printf "IN\n" in
@@ -31,7 +31,7 @@ let () =
     Printf.printf "done\n"
   in
   try_with (dynamic_wind bt foo) at
-  { effc = fun (type a) (e : a eff) -> 
+  { effc = fun (type a) (e : a Effect.t) -> 
     match e with
     | E -> Some (fun (k : (a, _) continuation) -> Printf.printf "handled E\n"; continue k ())
     | _ -> None }

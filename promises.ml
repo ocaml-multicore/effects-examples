@@ -31,8 +31,8 @@ module Promise : Promise = struct
 
   type 'a t = 'a status ref
 
-  type _ eff += Fork : (unit -> 'a) -> 'a t eff
-  type _ eff += Wait : 'a t -> unit eff
+  type _ Effect.t += Fork : (unit -> 'a) -> 'a t Effect.t
+  type _ Effect.t += Wait : 'a t -> unit Effect.t
 
   let fork f = perform (Fork f)
 
@@ -115,7 +115,7 @@ module Promise : Promise = struct
         match_with f () {
           retc = (fun v -> finish run_q sr v; dequeue run_q);
           exnc = (fun e -> abort run_q sr e; dequeue run_q);
-          effc = fun (type a) (e : a eff) ->
+          effc = fun (type a) (e : a Effect.t) ->
             match e with
             | Wait sr -> Some (fun (k : (a, _) continuation) -> wait sr k; dequeue run_q)
             | Fork f -> Some (fun k ->

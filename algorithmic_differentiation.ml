@@ -16,14 +16,14 @@ end = struct
 
   let mk v = {v; d = 0.0}
 
-  type _ eff += Add : t * t -> t eff
-  type _ eff += Mult : t * t -> t eff
+  type _ Effect.t += Add : t * t -> t Effect.t
+  type _ Effect.t += Mult : t * t -> t Effect.t
 
   let run f =
     ignore (match_with f () {
       retc = (fun r -> r.d <- 1.0; r);
       exnc = raise;
-      effc = fun (type a) (e : a eff) ->
+      effc = fun (type a) (e : a Effect.t) ->
         match e with
         | Add (a, b) -> Some (fun (k : (a, _) continuation) ->
             let x = {v = a.v +. b.v; d = 0.0} in

@@ -5,7 +5,7 @@ open Effect.Deep
 
 (* Non-determinism is an effect given by an operation Choose, that
    returns a boolean. *)
-type _ eff += Choose : bool eff
+type _ Effect.t += Choose : bool Effect.t
 let choose () = perform Choose
 
 (* An example non-deterministic computation: A coin toss *)
@@ -19,7 +19,7 @@ let toss () =
 let make_charged_handler (b : bool) =
   fun m ->
   try_with m () {
-    effc = fun (type a) (e : a eff) ->
+    effc = fun (type a) (e : a Effect.t) ->
       match e with
       | Choose -> Some (fun (k : (a, _) continuation) -> continue k b)
       | _ -> None
@@ -34,7 +34,7 @@ let all_results m =
   match_with m () {
     retc = (fun v -> [v]);
     exnc = raise;
-    effc = fun (type a) (e : a eff) ->
+    effc = fun (type a) (e : a Effect.t) ->
       match e with
       | Choose -> Some (fun (k : (a, _) continuation) -> (continue k true) @ (continue (Multicont.Deep.clone_continuation k) false))
       | _ -> None
@@ -47,7 +47,7 @@ let all_results m =
 (* Random interpretation *)
 let coin m =
   try_with m () {
-    effc = fun (type a) (e : a eff) ->
+    effc = fun (type a) (e : a Effect.t) ->
       match e with
       | Choose -> Some (fun (k : (a, _) continuation) -> continue k (Random.float 1.0 > 0.5))
       | _ -> None

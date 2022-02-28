@@ -24,7 +24,7 @@
 open Effect
 open Effect.Deep
 
-type _ eff += E : unit eff
+type _ Effect.t += E : unit Effect.t
 
 let printf = Printf.printf
 
@@ -44,7 +44,7 @@ let _ =
     printf "[Caml] Return from caml_to_c\n%!"
   in
   try_with f () {
-    effc = fun (type a) (e : a eff) ->
+    effc = fun (type a) (e : a Effect.t) ->
       match e with
       | E -> Some (fun (k : (a, _) continuation) ->
         printf "[Caml] Handle effect E. Continuing..\n%!";

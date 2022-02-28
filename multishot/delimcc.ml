@@ -31,10 +31,10 @@ module M : S = struct
  }
 
  let new_prompt (type a) () : a prompt =
-   let module M = struct type _ eff += Prompt : (('b, a) subcont -> a) -> 'b eff end in
+   let module M = struct type _ Effect.t += Prompt : (('b, a) subcont -> a) -> 'b Effect.t end in
    let take f  = perform (M.Prompt f) in
    let push f  = try_with f () {
-     effc = fun (type a) (e : a eff) -> 
+     effc = fun (type a) (e : a Effect.t) -> 
       match e with 
       | M.Prompt f -> Some (fun k -> f k)
       | _ -> None

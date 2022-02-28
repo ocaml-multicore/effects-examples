@@ -27,7 +27,7 @@ let string_of_player = function
 (* The [move] operation is centric to the game. The operation is
 parameterised by the active player and the number of sticks left in
 the game. *)
-type _ eff += Move : (player * int) -> int eff
+type _ Effect.t += Move : (player * int) -> int Effect.t
 let move p n = perform (Move (p, n))
 
 (* The game is modelled as two mutually recursive functions *)
@@ -49,7 +49,7 @@ let game n =
 let strategy (s : player -> (int -> (int, player) continuation -> player)) m =
   try_with
     m ()
-  { effc = fun (type a) (e : a eff) -> 
+  { effc = fun (type a) (e : a Effect.t) -> 
       match e with
       | Move (p, n) -> Some (fun (k : (a, player) continuation) -> s p n k)
       | _ -> None }
@@ -134,7 +134,7 @@ let gametree m =
   match_with m () {
     retc = (fun v -> Winner v);
     exnc = (fun e -> raise e);
-    effc = fun (type a) (e : a eff) ->
+    effc = fun (type a) (e : a Effect.t) ->
       match e with 
       | Move (p, n) -> Some (fun (k : (a, _) continuation) -> reify p n k)
       | _ -> None
@@ -162,7 +162,7 @@ let check_move p n k =
 
 let checker m =
   try_with m () {
-    effc = fun (type a) (e : a eff) ->
+    effc = fun (type a) (e : a Effect.t) ->
       match e with
       | Move (p, n) -> Some (fun (k : (a, _) continuation) -> check_move p n k)
       | _ -> None
@@ -184,14 +184,14 @@ let cheat_lose m =
 let (-<-) h g = fun m -> h (fun () -> g m)
 
 (** Choosing between strategies **)
-type _ eff += Choose : bool eff
+type _ Effect.t += Choose : bool Effect.t
 let choose () = perform Choose
 
 (* Flip a coin to decide whether to interpret Choose as true or
 false *)
 let coin m =
   try_with m () {
-    effc = fun (type a) (e : a eff) ->
+    effc = fun (type a) (e : a Effect.t) ->
       match e with
       | Choose -> Some (fun (k : (a, _) continuation) -> continue k (Random.float 1.0 > 0.5))
       | _ -> None
@@ -221,10 +221,10 @@ end
 module State (S : sig type t end) : STATE with type t = S.t = struct
   type t = S.t
 
-  type _ eff += Put : t -> unit eff
+  type _ Effect.t += Put : t -> unit Effect.t
   let put v = perform (Put v)
 
-  type _ eff += Get : t eff
+  type _ Effect.t += Get : t Effect.t
   let get () = perform Get
 
   let run (type a) (f : unit -> a) ~init : a =
@@ -232,7 +232,7 @@ module State (S : sig type t end) : STATE with type t = S.t = struct
       match_with f ()
       { retc = (fun x -> (fun s -> (s, x)));
         exnc = (fun e -> raise e);
-        effc = fun (type b) (e : b eff) ->
+        effc = fun (type b) (e : b Effect.t) ->
                  match e with
                  | Get -> Some (fun (k : (b, t -> (t * a)) continuation) ->
                      (fun (s : t) -> continue k s s))

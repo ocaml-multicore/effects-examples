@@ -12,19 +12,19 @@ let string_of_msg = function
 (** Process primitives **)
 type pid = int
 
-type _ eff += Spawn : (pid -> unit) -> pid eff
+type _ Effect.t += Spawn : (pid -> unit) -> pid Effect.t
 let spawn p = perform (Spawn p)
 
-type _ eff += Yield : unit eff
+type _ Effect.t += Yield : unit Effect.t
 let yield () = perform Yield
 
 (** Communication primitives **)
-type _ eff += Send : pid * message -> unit eff
+type _ Effect.t += Send : pid * message -> unit Effect.t
 let send pid data =
   perform (Send (pid, data));
   yield ()
 
-type _ eff += Recv : pid -> message option eff
+type _ Effect.t += Recv : pid -> message option Effect.t
 let rec recv pid =
   match perform (Recv pid) with
   | Some m -> m
@@ -75,7 +75,7 @@ let mailbox f =
     mailbox := mb; msg
   in
   try_with f () {
-    effc = fun (type a) (e : a eff) ->
+    effc = fun (type a) (e : a Effect.t) ->
       match e with
       | (Send (pid, msg)) -> Some (fun (k : (a, _) continuation) ->
         mailbox := Mailbox.push pid msg !mailbox;
@@ -101,7 +101,7 @@ let run main () =
     match_with f !pid {
       retc = (fun () -> dequeue ());
       exnc = (fun e -> raise e);
-      effc = fun (type a) (e : a eff) ->
+      effc = fun (type a) (e : a Effect.t) ->
         match e with
         | Yield -> Some (fun (k : (a, _) continuation) ->
           enqueue (fun () -> continue k ()); dequeue ())

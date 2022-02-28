@@ -10,7 +10,7 @@ let rec safe queen diag xs =
   | q :: qs -> queen <> q && queen <> q + diag && queen <> q - diag &&
                safe queen (diag + 1) qs
 
-type _ eff += Pick : int -> int eff
+type _ Effect.t += Pick : int -> int Effect.t
 exception Fail
 
 let rec find_solution n col : int list =
@@ -25,7 +25,7 @@ let queens_count n =
   match_with (find_solution n) n {
     retc = (fun _ -> 1);
     exnc = (function Fail -> 0 | e -> raise e);
-    effc = fun (type a) (e : a eff) ->
+    effc = fun (type a) (e : a Effect.t) ->
       match e with
       | Pick n -> Some (fun (k : (a, _) continuation) ->
         let rec loop i acc =
@@ -39,7 +39,7 @@ let queens_choose n =
   match_with (find_solution n) n {
     retc = (fun x -> [ x ]);
     exnc = (function Fail -> [] | e -> raise e);
-    effc = fun (type a) (e : a eff) ->
+    effc = fun (type a) (e : a Effect.t) ->
       match e with
       | Pick n -> Some (fun (k : (a, _) continuation) ->
         let rec loop i acc : int list list =

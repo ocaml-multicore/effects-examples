@@ -7,10 +7,9 @@ module type S = sig
 end
 
 module type SCHED = sig
-  open Effect
   type 'a cont
-  type _ eff += Suspend : ('a cont -> unit) -> 'a eff
-  type _ eff += Resume  : ('a cont * 'a) -> unit eff
+  type _ Effect.t += Suspend : ('a cont -> unit) -> 'a Effect.t
+  type _ Effect.t += Resume  : ('a cont * 'a) -> unit Effect.t
 end
 
 module Make (S : SCHED) : S = struct
