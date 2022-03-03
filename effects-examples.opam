@@ -31,5 +31,5 @@ build: [
 dev-repo: "git+https://github.com/ocaml-multicore/effects-examples.git"
 pin-depends: [
   [ "lwt.dev" "git+https://github.com/kit-ty-kate/lwt#0c4cc9d1238461b82b92d61c1c007cb1048509be" ]
-  [ "multicont.dev" "git+https://github.com/dhil/ocaml-multicont#97476ae6e8b1dc807cdc0aaf73693fbb1d1428a3" ]
+  [ "multicont.dev" "git+https://github.com/dhil/ocaml-multicont#22322e9d78c4d1245eb3a1e0d776c76fb43b429c" ]
 ]
