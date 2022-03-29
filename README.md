@@ -39,9 +39,10 @@ The original implementation of Multicore OCaml allowed a user to `Obj.clone_cont
 To run the examples with Multicore OCaml, be sure to install [Opam with these instructions](https://opam.ocaml.org/doc/Install.html).
 
 ```bash
-# After cloning this repository, create a 5.00 switch
+# After cloning this repository, create a 5.0.0 switch
 $ opam update
-$ opam switch create 5.0.0+trunk
+# Add the alpha repository to get unreleased 5.0.0 compatible libraries
+$ opam switch create 5.0.0+trunk --repo=default,alpha=git+https:://github.com/kit-ty-kate/opam-alpha-repository.git
 $ opam install . --deps-only
 $ make
 ```
