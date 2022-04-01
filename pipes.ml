@@ -1,11 +1,13 @@
 (** Deep encoding of pipes.
     The example is adapted from Kammar et al. (2013) **)
+open Effect
+open Effect.Deep
 
 (* We specialise our pipes to work only with integers *)
-effect Await : int
+type _ Effect.t += Await : int Effect.t
 let await () = perform Await
 
-effect Yield : int -> unit
+type _ Effect.t += Yield : int -> unit Effect.t
 let yield s = perform (Yield s)
 
 type prod = Prod of (unit -> (cons -> unit))
@@ -15,11 +17,16 @@ let flip f = fun y x -> f x y
 
 (* Parameterised handler that takes a consumer as parameter *)
 let up m =
-  match m () with
-  | v -> fun _ -> v
-  | effect (Yield s) k ->
-     fun (Cons cons) ->
-       cons s (Prod (fun () -> continue k ()))
+  match_with m () {
+    retc = (fun v -> fun _ -> v);
+    exnc = raise;
+    effc = fun (type a) (e : a Effect.t) ->
+      match e with
+      | Yield s -> Some (fun (k : (a, _) continuation) ->
+        fun (Cons cons) ->
+          cons s (Prod (fun () -> continue k ())))
+      | _ -> None
+  }
 
 (* Refine up to accept the parameter first rather than the computation. It's
    more convenient when combining handlers. *)
@@ -27,11 +34,16 @@ let up = flip up
 
 (* Parameterised handler that takes a producer as parameter *)
 let down m =
-  match m () with
-  | v -> fun _ -> v
-  | effect Await k ->
-     fun (Prod prod) ->
-       prod () (Cons (fun s -> continue k s))
+  match_with m () {
+    retc = (fun v -> fun _ -> v);
+    exnc = raise;
+    effc = fun (type a) (e : a Effect.t) ->
+      match e with
+      | Await -> Some (fun (k : (a, _) continuation) ->
+        fun (Prod prod) ->
+          prod () (Cons (fun s -> continue k s)))
+      | _ -> None
+  }
 
 let down = flip down
 

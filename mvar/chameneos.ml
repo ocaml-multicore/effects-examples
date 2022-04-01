@@ -1,3 +1,5 @@
+open Effect
+
 module List = ListLabels
 module String = StringLabels
 open Printf

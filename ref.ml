@@ -1,4 +1,6 @@
 open Printf
+open Effect
+open Effect.Deep
 
 module type STATE = sig
   type 'a t
@@ -14,44 +16,47 @@ module State : STATE = struct
 
   module type T = sig
     type elt
-    effect Get : elt
-    effect Set : elt -> unit
+    type _ Effect.t += Get : elt Effect.t
+    type _ Effect.t += Set : elt -> unit Effect.t
   end
   type 'a t = (module T with type elt = 'a)
 
-  effect Ref : 'a -> 'a t
+  type _ Effect.t += Ref : 'a -> 'a t Effect.t
   let ref v = perform (Ref v)
 
   let (!)  : type a. a t -> a =
-    fun (module R) -> perform  R.Get
+    fun (module R) -> perform R.Get
 
   let (:=) : type a. a t -> a -> unit =
     fun (module R) x -> perform (R.Set x)
 
   let run f =
-    begin try
-      f ()
-    with
-    | effect (Ref init) k ->
-        (* trick to name the existential type introduced by the matching: *)
-        (init, k) |> fun (type a) (init, k : a * (a t, _) continuation) ->
-        let module R =
-          struct
-            type elt = a
-            effect Get : elt
-            effect Set : elt -> unit
-          end
-        in
-        init |>
-        begin match
-          continue k (module R)
-        with
-        | result             -> fun _x -> result
-        | effect  R.Get    k -> fun x -> continue k x  x
-        | effect (R.Set y) k -> fun _x -> continue k () y
-        end
+    try_with f () {
+      effc = fun (type a) (e : a Effect.t) ->
+        match e with 
+        | Ref init -> Some (fun (k : (a, _) continuation) ->
+          (* trick to name the existential type introduced by the matching: *)
+          (init, k) |> fun (type b) (init, k : b * (b t, _) continuation) ->
+          let module R =
+            struct
+              type elt = b
+              type _ Effect.t += Get : elt Effect.t
+              type _ Effect.t += Set : elt -> unit Effect.t
+            end
+          in
+          init |>
+          match_with (continue k) (module R) {
+            retc = (fun result -> fun _x -> result);
+            exnc = raise;
+            effc = fun (type c) (e : c Effect.t) ->
+              match e with
+              | R.Get -> Some (fun (k : (c, _) continuation) -> fun (x : b) -> continue k x x)
+              | R.Set y -> Some (fun k -> fun _x -> continue k () y)
+              | _ -> None
+          })
+        | _ -> None
+    }
     end
-end
 
 open State
 

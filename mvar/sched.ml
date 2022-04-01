@@ -1,9 +1,12 @@
-effect Fork    : (unit -> unit) -> unit
-effect Yield   : unit
+open Effect
+open Effect.Deep
+
+type _ Effect.t += Fork    : (unit -> unit) -> unit Effect.t
+type _ Effect.t += Yield   : unit Effect.t
 
 type 'a cont = ('a,unit) continuation
-effect Suspend : ('a cont -> unit) -> 'a
-effect Resume  : ('a cont * 'a) -> unit
+type _ Effect.t += Suspend : ('a cont -> unit) -> 'a Effect.t
+type _ Effect.t += Resume  : ('a cont * 'a) -> unit Effect.t
 
 let run main =
   let run_q = Queue.create () in
@@ -15,13 +18,18 @@ let run main =
     else Queue.pop run_q ()
   in
   let rec spawn f =
-    match f () with
-    | () -> dequeue ()
-    | effect Yield k -> enqueue k (); dequeue ()
-    | effect (Fork f) k -> enqueue k (); spawn f
-    | effect (Suspend f) k -> f k; dequeue ()
-    | effect (Resume (k', v)) k ->
-        enqueue k' v; ignore (continue k ())
+    match_with f () {
+      retc = dequeue;
+      exnc = raise;
+      effc = fun (type a) (e : a Effect.t) ->
+        match e with
+        | Yield -> Some (fun (k : (a, _) continuation) -> enqueue k (); dequeue ())
+        | Fork f -> Some (fun k -> enqueue k (); spawn f)
+        | Suspend f -> Some (fun k -> f k; dequeue ())
+        | Resume (k', v) -> Some (fun k ->
+            enqueue k' v; ignore (continue k ()))
+        | _ -> None
+    }
   in
   spawn main
 

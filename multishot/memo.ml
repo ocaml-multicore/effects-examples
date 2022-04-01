@@ -1,3 +1,13 @@
+open Effect
+open Effect.Deep
+
+(* OCaml 5 removed the ability to clone continuations. See this conversation
+   https://discuss.ocaml.org/t/multi-shot-continuations-gone-forever/9072.
+
+   It is possible this example could be revived using:
+   https://github.com/dhil/ocaml-multicont
+*)
+
 module Memo : sig
 
   val memoize : ('a -> 'b) -> ('a -> 'b)
@@ -19,7 +29,7 @@ module Memo : sig
 
 end = struct
 
-  effect Cut : unit
+  type _ Effect.t += Cut : unit Effect.t
   let cut () = perform Cut
 
   type ('a,'b) cache_entry =
@@ -29,23 +39,26 @@ end = struct
   let memoize f =
     let cache = ref None in
     fun x ->
-      try
-        match !cache with
+      try_with
+        (fun () -> match !cache with
         | Some {input; cont} when x = input -> cont ()
         | _ ->
             let err_msg = "Memoized function was not cut" in
             cache := Some {input = x; cont = fun () -> failwith err_msg};
-            f x
-      with
-      | effect Cut k ->
-          match !cache with
-          | Some c ->
-              let rec save_cont k () =
-                c.cont <- save_cont (Obj.clone_continuation k);
-                continue k ()
-              in
-              save_cont k ()
-          | None -> failwith "impossible"
+            f x) 
+        ()
+        { effc = fun (type a) (e : a Effect.t) ->
+          match e with
+          | Cut -> Some (fun (k : (a, _) continuation) ->
+            match !cache with
+            | Some c ->
+                let rec save_cont k () =
+                  c.cont <- save_cont (Multicont.Deep.clone_continuation k);
+                  continue k ()
+                in
+                save_cont k ()
+            | None -> failwith "impossible")
+          | _ -> None}
 end
 
 let print_succ x =

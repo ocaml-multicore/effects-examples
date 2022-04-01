@@ -19,10 +19,6 @@
  (modules transaction))
 
 (executables
- (names delimcc)
- (modules delimcc))
-
-(executables
  (names dyn_wind)
  (modules dyn_wind))
 
@@ -35,24 +31,8 @@
  (modules promises))
 
 (executables
- (names queens)
- (modules queens))
-
-(executables
  (names reify_reflect)
  (modules reify_reflect))
-
-(executables
- (names memo)
- (modules memo))
-
-(executables
- (names nondeterminism)
- (modules nondeterminism))
-
-(executables
- (names nim)
- (modules nim))
 
 (executables
  (names eratosthenes)
@@ -65,10 +45,6 @@
 (executables
  (names loop)
  (modules loop))
-
-(executables
- (names clone_is_tricky)
- (modules clone_is_tricky))
 
 (executables
  (names fringe)

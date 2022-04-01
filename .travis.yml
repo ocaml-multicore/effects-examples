@@ -1,8 +1,0 @@
-language: c
-sudo: required
-script: bash -ex .travis.sh
-os:
-  - linux
-  - osx
-env:
-  - OCAML_VERSION=4.10

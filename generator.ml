@@ -1,4 +1,6 @@
 open Printf
+open Effect
+open Effect.Deep
 
 module type TREE = sig
   type 'a t
@@ -51,15 +53,21 @@ module Tree : TREE = struct
 
   (* val to_gen : 'a t -> (unit -> 'a option) *)
   let to_gen (type a) (t : a t) =
-    let module M = struct effect Next : a -> unit end in
+    let module M = struct 
+      type _ Effect.t += Next : a -> unit Effect.t
+    end in
     let open M in
     let rec step = ref (fun () ->
-      try
-        iter (fun x -> perform (Next x)) t;
-        None
-      with effect (Next v) k ->
-        step := (fun () -> continue k ());
-        Some v)
+      try_with
+       (fun t -> iter (fun x -> perform (Next x)) t; None)
+       t 
+       { effc = fun (type a) (e : a Effect.t) -> 
+        match e with 
+        | Next v -> 
+          Some (fun (k : (a, _) continuation) -> 
+            step := (fun () -> continue k ());
+            Some v)
+        | _ -> None })
     in
       fun () -> !step ()
 

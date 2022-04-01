@@ -7,6 +7,8 @@
 
    This problem can be elegantly solved using one-shot continuations.
 *)
+open Effect
+open Effect.Deep
 
 module type EQUATABLE = sig
   type t
@@ -23,7 +25,7 @@ module SameFringe(E : EQUATABLE) = struct
   type nonrec tree = E.t tree
 
   (* Yielding control *)
-  effect Yield : E.t -> unit
+  type _ Effect.t += Yield : E.t -> unit Effect.t
   let yield e = perform (Yield e)
 
   (* The walk routine *)
@@ -39,9 +41,14 @@ module SameFringe(E : EQUATABLE) = struct
 
   (* Reifies `Yield' effects *)
   let step f =
-    match f () with
-    | _ -> Done
-    | effect (Yield e) k -> Yielded (e, k)
+    match_with f () {
+      retc = (fun _ -> Done);
+      exnc = (fun e -> raise e);
+      effc = fun (type a) (e : a Effect.t) ->
+        match e with
+        | Yield e -> Some (fun (k : (a, _) continuation) -> Yielded (e, k))
+        | _ -> None
+    }
 
   (* The comparator "step walks" two given trees simultaneously *)
   let comparator ltree rtree =

@@ -8,12 +8,13 @@ end
 
 module type SCHED = sig
   type 'a cont
-  effect Suspend : ('a cont -> unit) -> 'a
-  effect Resume  : ('a cont * 'a) -> unit
+  type _ Effect.t += Suspend : ('a cont -> unit) -> 'a Effect.t
+  type _ Effect.t += Resume  : ('a cont * 'a) -> unit Effect.t
 end
 
 module Make (S : SCHED) : S = struct
-
+  open Effect
+  
   (** The state of mvar is either [Full v q] filled with value [v] and a queue
       [q] of threads waiting to fill the mvar, or [Empty q], with a queue [q] of
       threads waiting to empty the mvar. *)

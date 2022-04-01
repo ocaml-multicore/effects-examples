@@ -1,5 +1,7 @@
 (* Monadic Reflection :
    http://www.cs.ioc.ee/mpc-amast06/msfp/filinski-slides.pdf *)
+open Effect
+open Effect.Deep
 
 (* The monad signature *)
 module type MONAD =
@@ -16,10 +18,15 @@ sig
   val reflect : 'a M.t -> 'a
 end =
 struct
-  effect E : 'a M.t -> 'a
-  let reify f = match f () with
-      x -> M.return x
-    | effect (E m) k -> M.bind m (continue k)
+  type _ Effect.t += E : 'a M.t -> 'a Effect.t
+  let reify f = match_with f () {
+    retc = (fun x -> M.return x);
+    exnc = raise;
+    effc = fun (type a) (e : a Effect.t) ->
+      match e with
+      | E m -> Some (fun k -> M.bind m (continue k))
+      | _ -> None
+  }
   let reflect m = perform (E m)
 end
 
