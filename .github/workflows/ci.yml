@@ -1,0 +1,25 @@
+name: CI
+on:
+  pull_request:
+  push:
+  schedule:
+    # Prime the caches every Monday
+    - cron: 0 1 * * MON
+jobs:
+  build:
+    runs-on: 
+      - ubuntu-latest
+      - macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Use OCaml 5.0.0+trunk
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ocaml-variants.5.0.0+trunk
+          opam-repositories: |
+            default: https://github.com/ocaml/opam-repository.git
+            ocaml-alpha-repository: https://github.com/kit-ty-kate/ocaml-alpha-repository.git
+          opam-depext: false
+      - run: opam install . --deps-only --with-test
+      - run: opam exec -- dune build
