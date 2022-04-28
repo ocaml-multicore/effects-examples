@@ -42,7 +42,7 @@ To run the examples with Multicore OCaml, be sure to install [Opam with these in
 # After cloning this repository, create a 5.0.0 switch
 $ opam update
 # Add the alpha repository to get unreleased 5.0.0 compatible libraries
-$ opam switch create 5.0.0+trunk --repo=default,alpha=git+https:://github.com/kit-ty-kate/opam-alpha-repository.git
+$ opam switch create 5.0.0+trunk --repo=default,alpha=git+https://github.com/kit-ty-kate/opam-alpha-repository.git
 $ opam install . --deps-only
 $ make
 ```
