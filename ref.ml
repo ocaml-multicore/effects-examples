@@ -14,21 +14,19 @@ end
 
 module State : STATE = struct
 
-  module type T = sig
-    type elt
-    type _ Effect.t += Get : elt Effect.t
-    type _ Effect.t += Set : elt -> unit Effect.t
-  end
-  type 'a t = (module T with type elt = 'a)
+  type 'a t = {
+    get : unit -> 'a;
+    set : 'a -> unit;
+  }
 
   type _ Effect.t += Ref : 'a -> 'a t Effect.t
-  let ref v = perform (Ref v)
+  let ref init = perform (Ref init)
 
   let (!)  : type a. a t -> a =
-    fun (module R) -> perform R.Get
+    fun {get; _} -> get ()
 
   let (:=) : type a. a t -> a -> unit =
-    fun (module R) x -> perform (R.Set x)
+    fun {set; _} y -> set y
 
   let run f =
     try_with f () {
@@ -37,21 +35,20 @@ module State : STATE = struct
         | Ref init -> Some (fun (k : (a, _) continuation) ->
           (* trick to name the existential type introduced by the matching: *)
           (init, k) |> fun (type b) (init, k : b * (b t, _) continuation) ->
-          let module R =
-            struct
-              type elt = b
-              type _ Effect.t += Get : elt Effect.t
-              type _ Effect.t += Set : elt -> unit Effect.t
-            end
-          in
+          let open struct
+            type _ Effect.t += Get : b Effect.t
+            type _ Effect.t += Set : b -> unit Effect.t
+          end in
+          let get () = perform Get in
+          let set y = perform (Set y) in
           init |>
-          match_with (continue k) (module R) {
+          match_with (continue k) {get; set} {
             retc = (fun result -> fun _x -> result);
             exnc = raise;
             effc = fun (type c) (e : c Effect.t) ->
               match e with
-              | R.Get -> Some (fun (k : (c, _) continuation) -> fun (x : b) -> continue k x x)
-              | R.Set y -> Some (fun k -> fun _x -> continue k () y)
+              | Get -> Some (fun (k : (c, _) continuation) -> fun (x : b) -> continue k x x)
+              | Set y -> Some (fun k -> fun _x -> continue k () y)
               | _ -> None
           })
         | _ -> None
