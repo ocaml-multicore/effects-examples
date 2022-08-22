@@ -1,4 +1,4 @@
-EXE := concurrent.exe state.exe ref.exe transaction.exe echo.exe \
+EXE := concurrent.exe ref.exe transaction.exe echo.exe \
 	dyn_wind.exe generator.exe promises.exe reify_reflect.exe \
 	MVar_test.exe chameneos.exe eratosthenes.exe pipes.exe loop.exe \
 	fringe.exe algorithmic_differentiation.exe
@@ -7,6 +7,9 @@ all: $(EXE)
 
 concurrent.exe: sched.mli sched.ml concurrent.ml
 	dune build concurrent.exe
+
+ref.exe: state.ml ref.ml
+	dune build ref.exe
 
 echo.exe: aio/aio.mli aio/aio.ml aio/echo.ml
 	dune build aio/echo.exe
