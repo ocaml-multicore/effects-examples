@@ -1,25 +1,37 @@
-name: CI
+name: main
+
 on:
   pull_request:
   push:
   schedule:
     # Prime the caches every Monday
     - cron: 0 1 * * MON
+
 jobs:
   build:
-    runs-on: 
-      - ubuntu-latest
-      - macos-latest
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+        ocaml-compiler:
+          - ocaml-base-compiler.5.0.0~alpha1
+
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Use OCaml 5.0.0+trunk
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v2
         with:
-          ocaml-compiler: ocaml-variants.5.0.0+trunk
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
           opam-repositories: |
             default: https://github.com/ocaml/opam-repository.git
-            ocaml-alpha-repository: https://github.com/kit-ty-kate/ocaml-alpha-repository.git
+            alpha: git+https://github.com/kit-ty-kate/opam-alpha-repository
           opam-depext: false
+
       - run: opam install . --deps-only --with-test
+
       - run: opam exec -- dune build
