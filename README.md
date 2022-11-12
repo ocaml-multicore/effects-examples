@@ -5,6 +5,7 @@
 Examples to illustrate the use of algebraic effects in OCaml. See
 * [Effective Concurrency with Algebraic Effects](http://kcsrk.info/ocaml/multicore/2015/05/20/effects-multicore/)
 * [Pearls of Algebraic Effects and Handlers](http://kcsrk.info/ocaml/multicore/effects/2015/05/27/more-effects/)
+* [Retrofitting Effect Handlers onto OCaml](https://dl.acm.org/doi/10.1145/3453483.3454039)
 
 ## Examples
 
@@ -65,3 +66,7 @@ These are other examples that utilise OCaml effect handlers that are not in this
 * [Reactive UI and animation](https://gopiandcode.uk/logs/log-bye-bye-monads-algebraic-effects.html)
 * [Probabilisitic Programming](https://github.com/Arnhav-Datar/EffPPL)
   + and the [project report](https://github.com/Arnhav-Datar/EffPPL/blob/main/reports/final_report/EffPPL_Report.pdf)
+  
+## Citation
+
+If you are citing this work in an academic paper, please cite the PLDI 2021 paper "Retrofitting Effect Handlers onto OCaml": https://dl.acm.org/doi/10.1145/3453483.3454039.
