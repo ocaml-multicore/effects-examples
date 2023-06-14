@@ -1,9 +1,6 @@
-(* Old example from when there was a clone_continuation function *)
-
-(* Why is `clone_continuation` in `Obj` module?
- * This is because one-shot continuations and multi-shot continuations mix
- * badly. This program illustrates that an resuming an inner one-shot
- * continuation within an outer multi-shot context causes runtime error.
+(* Multi-shot continuations don't play nicely with linear resources.
+ * This program illustrates that resuming an inner one-shot continuation 
+ * within an outer multi-shot context causes a runtime error.
  *)
 open Effect
 open Effect.Deep
