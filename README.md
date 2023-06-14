@@ -23,7 +23,7 @@ Examples to illustrate the use of algebraic effects in OCaml. See
 * [Message-passing pipeline: Sieve of Eratostheneses](https://github.com/ocaml-multicore/effects-examples/blob/master/eratosthenes.ml)
 * [Deep pipes](https://github.com/ocaml-multicore/effects-examples/blob/master/pipes.ml)
 * [Non termination from effects](https://github.com/ocaml-multicore/effects-examples/blob/master/loop.ml)
-* [Continuation cloning is tricky](https://github.com/ocaml-multicore/effects-examples/blob/master/clone_is_tricky.ml)
+* [Continuation cloning is tricky](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/clone_is_tricky.ml)
 * [A solution to the Same Fringe Problem](https://github.com/ocaml-multicore/effects-examples/blob/master/fringe.ml)
 * [Reverse-mode Algorithmic Differentiation](https://github.com/ocaml-multicore/effects-examples/blob/master/algorithmic_differentiation.ml)
 
