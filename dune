@@ -19,6 +19,10 @@
  (modules dyn_wind))
 
 (executables
+ (names dynamic_state)
+ (modules dynamic_state))
+
+(executables
  (names generator)
  (modules generator))
 

@@ -138,26 +138,17 @@ end
 *)
 module LocalMutVar : CELL = functor (T : TYPE) -> struct
   type t = T.t
-  type _ Effect.t += Get : t Effect.t
-  type _ Effect.t += Set : t -> unit Effect.t
+  type _ eff += Get : t eff | Set : t -> unit eff
 
-  let get() = perform Get
+  let get () = perform Get
   let set y = perform (Set y)
 
   let run (type a) ~init main : t * a=
     let var = ref init in
-    match_with main () {
-      retc = (fun res -> (!var, res));
-      exnc = raise;
-      effc = fun (type b) (e : b Effect.t) ->
-        match e with
-        | Get -> Some (fun (k : (b, t * a) continuation) ->
-            continue k (!var : t))
-        | Set y -> Some (fun k ->
-            var := y;
-            continue k ())
-        | _ -> None
-    }
+    match main () with
+    | res -> !var, res
+    | effect Get, k -> continue k (!var : t)
+    | effect (Set y), k -> var := y; continue k ()
 end
 
 
@@ -188,13 +179,15 @@ end
 *)
 module StPassing : CELL = functor (T : TYPE) -> struct
   type t = T.t
-  type _ Effect.t += Get : t Effect.t
-  type _ Effect.t += Set : t -> unit Effect.t
+  type _ eff += Get : t eff | Set : t -> unit eff
 
-  let get() = perform Get
+  let get () = perform Get
   let set y = perform (Set y)
 
   let run (type a) ~init (main : unit -> a) : t * a =
+    (* In this case the lower-level syntax is less verbose
+       since we have to rebind the existentials anyway if using
+       the concrete effect syntax. *)
     match_with main () {
       retc = (fun res x -> (x, res));
       exnc = raise;

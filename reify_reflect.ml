@@ -18,15 +18,10 @@ sig
   val reflect : 'a M.t -> 'a
 end =
 struct
-  type _ Effect.t += E : 'a M.t -> 'a Effect.t
-  let reify f = match_with f () {
-    retc = (fun x -> M.return x);
-    exnc = raise;
-    effc = fun (type a) (e : a Effect.t) ->
-      match e with
-      | E m -> Some (fun k -> M.bind m (continue k))
-      | _ -> None
-  }
+  type _ eff += E : 'a M.t -> 'a eff
+  let reify f = match f () with
+      x -> M.return x
+    | effect (E m), k -> M.bind m (continue k)
   let reflect m = perform (E m)
 end
 

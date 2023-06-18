@@ -15,7 +15,7 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - ocaml-base-compiler.5.0.0~alpha1
+          - ocaml-base-compiler.5.3.0+trunk
 
     runs-on: ${{ matrix.os }}
 
@@ -29,7 +29,6 @@ jobs:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
           opam-repositories: |
             default: https://github.com/ocaml/opam-repository.git
-            alpha: git+https://github.com/kit-ty-kate/opam-alpha-repository
           opam-depext: false
 
       - run: opam install . --deps-only --with-test

@@ -15,23 +15,18 @@ end
 module Txn : TXN = struct
   type 'a t = 'a ref
 
-  type _ Effect.t += Update : 'a t * 'a -> unit Effect.t
+  type _ eff += Update : 'a t * 'a -> unit eff
 
   let atomically f =
     let comp =
-      match_with f () {
-        retc = (fun x -> fun _ -> x);
-        exnc = (fun e -> (fun rb -> rb (); raise e));
-        effc = fun (type a) (e : a Effect.t) ->
-          match e with
-          | Update (r, v) -> Some (fun (k : (a, _) continuation) -> (fun rb ->
-            let old_v = !r in
-            r := v;
-            continue k () (fun () -> r := old_v; rb ())))
-          | _ -> None
-      }
-    in 
-      comp (fun () -> ())
+      match f () with
+      | x -> (fun _ -> x)
+      | exception e -> (fun rb -> rb (); raise e)
+      | effect (Update (r,v)), k -> (fun rb ->
+          let old_v = !r in
+          r := v;
+          continue k () (fun () -> r := old_v; rb ()))
+    in comp (fun () -> ())
 
   let ref = ref
   let (!) = (!)

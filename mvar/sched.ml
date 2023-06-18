@@ -1,12 +1,12 @@
 open Effect
 open Effect.Deep
 
-type _ Effect.t += Fork    : (unit -> unit) -> unit Effect.t
-type _ Effect.t += Yield   : unit Effect.t
+type _ eff += Fork : (unit -> unit) -> unit eff
+type _ eff += Yield : unit eff
 
 type 'a cont = ('a,unit) continuation
-type _ Effect.t += Suspend : ('a cont -> unit) -> 'a Effect.t
-type _ Effect.t += Resume  : ('a cont * 'a) -> unit Effect.t
+type _ eff += Suspend : ('a cont -> unit) -> 'a eff
+type _ eff += Resume : 'a cont * 'a -> unit eff
 
 let run main =
   let run_q = Queue.create () in
