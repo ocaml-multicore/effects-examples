@@ -43,12 +43,15 @@ let _ =
     caml_to_c ();
     printf "[Caml] Return from caml_to_c\n%!"
   in
-  try_with f () {
-    effc = fun (type a) (e : a Effect.t) ->
-      match e with
-      | E -> Some (fun (k : (a, _) continuation) ->
-        printf "[Caml] Handle effect E. Continuing..\n%!";
-        continue k ())
-      | _ -> None
-  }
-
+  try_with f ()
+    {
+      effc =
+        (fun (type a) (e : a Effect.t) ->
+          match e with
+          | E ->
+              Some
+                (fun (k : (a, _) continuation) ->
+                  printf "[Caml] Handle effect E. Continuing..\n%!";
+                  continue k ())
+          | _ -> None);
+    }

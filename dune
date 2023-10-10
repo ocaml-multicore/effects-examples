@@ -1,6 +1,7 @@
 (env
  (dev
-  (flags (:standard -w -50 -w -32 -w -27))))
+  (flags
+   (:standard -w -50 -w -32 -w -27))))
 
 (executables
  (names concurrent)
@@ -49,4 +50,3 @@
 (executables
  (names algorithmic_differentiation)
  (modules algorithmic_differentiation))
-
