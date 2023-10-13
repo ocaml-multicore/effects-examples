@@ -9,8 +9,7 @@ open Effect.Deep
 *)
 
 module Memo : sig
-
-  val memoize : ('a -> 'b) -> ('a -> 'b)
+  val memoize : ('a -> 'b) -> 'a -> 'b
   (** [memoize f] returns the memoized version of [f] that caches the
    * evaluation of [f] from the start of [f] to the last invocation of [cut ()]
    * in [f], with respect to some input [x] to the memoized function.
@@ -26,39 +25,43 @@ module Memo : sig
    * multiple [cut()], the function is memoized until the last cut. Invoking a
    * memoized function without establishing a cut is an error.
    *)
-
 end = struct
-
   type _ Effect.t += Cut : unit Effect.t
+
   let cut () = perform Cut
 
-  type ('a,'b) cache_entry =
-    {input : 'a;
-     mutable cont : unit -> 'b}
+  type ('a, 'b) cache_entry = { input : 'a; mutable cont : unit -> 'b }
 
   let memoize f =
     let cache = ref None in
     fun x ->
       try_with
-        (fun () -> match !cache with
-        | Some {input; cont} when x = input -> cont ()
-        | _ ->
-            let err_msg = "Memoized function was not cut" in
-            cache := Some {input = x; cont = fun () -> failwith err_msg};
-            f x) 
+        (fun () ->
+          match !cache with
+          | Some { input; cont } when x = input -> cont ()
+          | _ ->
+              let err_msg = "Memoized function was not cut" in
+              cache := Some { input = x; cont = (fun () -> failwith err_msg) };
+              f x)
         ()
-        { effc = fun (type a) (e : a Effect.t) ->
-          match e with
-          | Cut -> Some (fun (k : (a, _) continuation) ->
-            match !cache with
-            | Some c ->
-                let rec save_cont k () =
-                  c.cont <- save_cont (Multicont.Deep.clone_continuation k);
-                  continue k ()
-                in
-                save_cont k ()
-            | None -> failwith "impossible")
-          | _ -> None}
+        {
+          effc =
+            (fun (type a) (e : a Effect.t) ->
+              match e with
+              | Cut ->
+                  Some
+                    (fun (k : (a, _) continuation) ->
+                      match !cache with
+                      | Some c ->
+                          let rec save_cont k () =
+                            c.cont <-
+                              save_cont (Multicont.Deep.clone_continuation k);
+                            continue k ()
+                          in
+                          save_cont k ()
+                      | None -> failwith "impossible")
+              | _ -> None);
+        }
 end
 
 let print_succ x =
@@ -66,8 +69,8 @@ let print_succ x =
   (* ......
    * expensive computation
    * .....*)
-  Memo.cut();
-  Printf.printf "Succ of %d is %d\n" x (x+1)
+  Memo.cut ();
+  Printf.printf "Succ of %d is %d\n" x (x + 1)
 
 let memoized_print_succ = Memo.memoize print_succ
 

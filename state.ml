@@ -10,13 +10,12 @@
    (3) [StPassing], a functional implementation in state-passing style.
 
    The stating-passing--style implementation comes from
- 
+
      https://gist.github.com/kayceesrk/3c307d0340fbfc68435d4769ad447e10 .
 *)
 
 open Effect
 open Effect.Deep
-
 
 (* --------------------------------------------------------------------------- *)
 (** Type Definitions. *)
@@ -33,6 +32,7 @@ end
 *)
 module type STATE = sig
   type t
+
   val get : unit -> t
   val set : t -> unit
   val run : init:t -> (unit -> 'a) -> t * 'a
@@ -68,7 +68,6 @@ module type CELL = functor (T : TYPE) -> STATE with type t = T.t
      want to avoid types such as [cell -> (module REF)]).
 *)
 
-
 (* --------------------------------------------------------------------------- *)
 (** Global State. *)
 
@@ -95,22 +94,23 @@ module type CELL = functor (T : TYPE) -> STATE with type t = T.t
    instances are still ongoing. Moreover, accesses to [var] will suffer
    from race conditions.
 *)
-module GlobalMutVar : CELL = functor (T : TYPE) -> struct
-  type t = T.t
+module GlobalMutVar : CELL =
+functor
+  (T : TYPE)
+  ->
+  struct
+    type t = T.t
 
-  let var = ref None
+    let var = ref None
+    let get () = match !var with Some x -> x | None -> assert false
+    let set y = var := Some y
 
-  let get() = match !var with Some x -> x | None -> assert false
-  let set y = var := Some y
-
-  let run ~init main =
-    set init      |> fun _   ->
-    main()        |> fun res ->
-    get()         |> fun x   ->
-    (var := None) |> fun _   ->
-    (x, res)
-end
-
+    let run ~init main =
+      set init |> fun _ ->
+      main () |> fun res ->
+      get () |> fun x ->
+      (var := None) |> fun _ -> (x, res)
+  end
 
 (* --------------------------------------------------------------------------- *)
 (** Local State. *)
@@ -136,30 +136,38 @@ end
    of [get] and [set], there is no interference among these instances,
    because effect names are immutable.
 *)
-module LocalMutVar : CELL = functor (T : TYPE) -> struct
-  type t = T.t
-  type _ Effect.t += Get : t Effect.t
-  type _ Effect.t += Set : t -> unit Effect.t
+module LocalMutVar : CELL =
+functor
+  (T : TYPE)
+  ->
+  struct
+    type t = T.t
+    type _ Effect.t += Get : t Effect.t
+    type _ Effect.t += Set : t -> unit Effect.t
 
-  let get() = perform Get
-  let set y = perform (Set y)
+    let get () = perform Get
+    let set y = perform (Set y)
 
-  let run (type a) ~init main : t * a=
-    let var = ref init in
-    match_with main () {
-      retc = (fun res -> (!var, res));
-      exnc = raise;
-      effc = fun (type b) (e : b Effect.t) ->
-        match e with
-        | Get -> Some (fun (k : (b, t * a) continuation) ->
-            continue k (!var : t))
-        | Set y -> Some (fun k ->
-            var := y;
-            continue k ())
-        | _ -> None
-    }
-end
-
+    let run (type a) ~init main : t * a =
+      let var = ref init in
+      match_with main ()
+        {
+          retc = (fun res -> (!var, res));
+          exnc = raise;
+          effc =
+            (fun (type b) (e : b Effect.t) ->
+              match e with
+              | Get ->
+                  Some
+                    (fun (k : (b, t * a) continuation) -> continue k (!var : t))
+              | Set y ->
+                  Some
+                    (fun k ->
+                      var := y;
+                      continue k ())
+              | _ -> None);
+        }
+  end
 
 (* --------------------------------------------------------------------------- *)
 (** State-Passing Style. *)
@@ -186,63 +194,67 @@ end
    separate stacks are safe. The same remarks as for the functor [LocalMutVar]
    apply.
 *)
-module StPassing : CELL = functor (T : TYPE) -> struct
-  type t = T.t
-  type _ Effect.t += Get : t Effect.t
-  type _ Effect.t += Set : t -> unit Effect.t
+module StPassing : CELL =
+functor
+  (T : TYPE)
+  ->
+  struct
+    type t = T.t
+    type _ Effect.t += Get : t Effect.t
+    type _ Effect.t += Set : t -> unit Effect.t
 
-  let get() = perform Get
-  let set y = perform (Set y)
+    let get () = perform Get
+    let set y = perform (Set y)
 
-  let run (type a) ~init (main : unit -> a) : t * a =
-    match_with main () {
-      retc = (fun res x -> (x, res));
-      exnc = raise;
-      effc = fun (type b) (e : b Effect.t) ->
-        match e with
-        | Get -> Some (fun (k : (b, t -> (t * a)) continuation) ->
-            fun (x : t) -> continue k x x)
-        | Set y -> Some (fun k ->
-            fun (_x : t) -> continue k () y)
-        | _ -> None
-    } init
-end
-
+    let run (type a) ~init (main : unit -> a) : t * a =
+      match_with main ()
+        {
+          retc = (fun res x -> (x, res));
+          exnc = raise;
+          effc =
+            (fun (type b) (e : b Effect.t) ->
+              match e with
+              | Get ->
+                  Some
+                    (fun (k : (b, t -> t * a) continuation) (x : t) ->
+                      continue k x x)
+              | Set y -> Some (fun k (_x : t) -> continue k () y)
+              | _ -> None);
+        }
+        init
+  end
 
 (* --------------------------------------------------------------------------- *)
 (** Examples. *)
 
 open Printf
 
-let _ =
-  printf "Opening module State...\n"
+let _ = printf "Opening module State...\n"
 
-module IntCell = StPassing(struct type t = int end)
-module StrCell = StPassing(struct type t = string end)
+module IntCell = StPassing (struct
+  type t = int
+end)
 
-let main() : unit =
+module StrCell = StPassing (struct
+  type t = string
+end)
+
+let main () : unit =
   IntCell.(
-    printf "%d\n" (get());
+    printf "%d\n" (get ());
     set 42;
-    printf "%d\n" (get());
+    printf "%d\n" (get ());
     set 21;
-    printf "%d\n" (get())
-  );
+    printf "%d\n" (get ()));
   StrCell.(
     set "Hello...";
-    printf "%s\n" (get());
+    printf "%s\n" (get ());
     set "...World!";
-    printf "%s\n" (get ())
-  )
+    printf "%s\n" (get ()))
 
 let _ =
   printf "Running tests...\n";
-  ignore (
-    IntCell.run ~init:0 (fun () ->
-      StrCell.run ~init:"" main
-    )
-  );
+  ignore (IntCell.run ~init:0 (fun () -> StrCell.run ~init:"" main));
   printf "End of tests.\n"
 
-let _ =
-  printf "End of module State.\n"
+let _ = printf "End of module State.\n"

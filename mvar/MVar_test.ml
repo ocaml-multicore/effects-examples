@@ -1,17 +1,15 @@
 module MVar = MVar.Make (Sched)
-
 open MVar
 open Printf
 open Sched
 
 let mv = create_empty ()
-
 let fork f = Effect.perform @@ Fork f
 
 let put x =
-  (printf "Before put: %s\n" x;
+  printf "Before put: %s\n" x;
   put x mv;
-  printf "After put: %s\n" x)
+  printf "After put: %s\n" x
 
 let get () =
   let () = printf "Before get\n" in

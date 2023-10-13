@@ -28,49 +28,45 @@ let send sock str =
   let len = Bytes.length str in
   let total = ref 0 in
   (try
-      while !total < len do
-        let write_count = Aio.send sock str !total (len - !total) [] in
-        total := write_count + !total
-      done
-    with _ -> ()
-    );
+     while !total < len do
+       let write_count = Aio.send sock str !total (len - !total) [] in
+       total := write_count + !total
+     done
+   with _ -> ());
   !total
 
 let recv sock maxlen =
   let str = Bytes.create maxlen in
-  let recvlen =
-    try Aio.recv sock str 0 maxlen []
-    with _ -> 0
-  in
-   Bytes.sub str 0 recvlen
+  let recvlen = try Aio.recv sock str 0 maxlen [] with _ -> 0 in
+  Bytes.sub str 0 recvlen
 
 let close sock =
   try Unix.shutdown sock Unix.SHUTDOWN_ALL
-  with _ -> () ;
-  Unix.close sock
+  with _ ->
+    ();
+    Unix.close sock
 
 let string_of_sockaddr = function
   | Unix.ADDR_UNIX s -> s
-  | Unix.ADDR_INET (inet,port) ->
+  | Unix.ADDR_INET (inet, port) ->
       Unix.string_of_inet_addr inet ^ ":" ^ string_of_int port
 
 (* Repeat what the client says until the client goes away. *)
 let rec echo_server sock addr =
   try
     let data = recv sock 1024 in
-    if Bytes.length data > 0 then
-      (ignore (send sock data);
-       echo_server sock addr)
+    if Bytes.length data > 0 then (
+      ignore (send sock data);
+      echo_server sock addr)
     else
       let cn = string_of_sockaddr addr in
-      (printf "echo_server : client (%s) disconnected.\n%!" cn;
-       close sock)
-  with
-  | _ -> close sock
+      printf "echo_server : client (%s) disconnected.\n%!" cn;
+      close sock
+  with _ -> close sock
 
 let server () =
   (* Server listens on localhost at 9301 *)
-  let addr, port = Unix.inet_addr_loopback, 9301 in
+  let addr, port = (Unix.inet_addr_loopback, 9301) in
   printf "Echo server listening on 127.0.0.1:%d\n%!" port;
   let saddr = Unix.ADDR_INET (addr, port) in
   let ssock = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
@@ -89,7 +85,6 @@ let server () =
       Unix.set_nonblock client_sock;
       Aio.fork (fun () -> echo_server client_sock client_addr)
     done
-  with
-  | _ -> close ssock
+  with _ -> close ssock
 
 let () = Aio.run server
