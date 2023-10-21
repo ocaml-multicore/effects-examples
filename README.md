@@ -1,6 +1,6 @@
 # OCaml effects examples
 
-[![Build Status](https://travis-ci.org/ocaml-multicore/effects-examples.svg?branch=master)](https://travis-ci.org/ocaml-multicore/effects-examples)    
+[![Build Status](https://github.com/ocaml-multicore/effects-examples/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/ocaml-multicore/effects-examples/actions/workflows/ci.yml)
 
 Examples to illustrate the use of algebraic effects in OCaml. See
 * [Effective Concurrency with Algebraic Effects](http://kcsrk.info/ocaml/multicore/2015/05/20/effects-multicore/)
