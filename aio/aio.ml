@@ -12,7 +12,6 @@ type file_descr = Unix.file_descr
 type sockaddr = Unix.sockaddr
 type msg_flag = Unix.msg_flag
 type _ Effect.t += Fork : (unit -> unit) -> unit Effect.t
-type _ Effect.t += Yield : unit Effect.t
 type _ Effect.t += Accept : file_descr -> (file_descr * sockaddr) Effect.t
 
 type _ Effect.t +=
@@ -24,7 +23,6 @@ type _ Effect.t +=
 type _ Effect.t += Sleep : float -> unit Effect.t
 
 let fork f = perform (Fork f)
-let yield () = perform Yield
 let accept fd = perform (Accept fd)
 let recv fd buf pos len mode = perform (Recv (fd, buf, pos, len, mode))
 let send fd bus pos len mode = perform (Send (fd, bus, pos, len, mode))
@@ -163,14 +161,9 @@ let run main =
         effc =
           (fun (type a) (e : a Effect.t) ->
             match e with
-            | Yield ->
-                Some
-                  (fun (k : (a, _) continuation) ->
-                    enqueue_thread st k ();
-                    schedule st)
             | Fork f ->
                 Some
-                  (fun k ->
+                  (fun (k : (a, _) continuation) ->
                     enqueue_thread st k ();
                     fork st f)
             | Accept fd ->

@@ -7,7 +7,6 @@
  *)
 
 val fork : (unit -> unit) -> unit
-val yield : unit -> unit
 
 type file_descr = Unix.file_descr
 type sockaddr = Unix.sockaddr
