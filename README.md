@@ -34,6 +34,7 @@ The original implementation of Multicore OCaml allowed a user to `Obj.clone_cont
 * [Backtracking N-Queens](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/queens.ml)
 * [Memoization](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/memo.ml)
 * [A mathematical game: Nim](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/nim.ml)
+* [Dynamic State](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/dynamic_state.ml)
 
 ## Running the examples
 
@@ -61,7 +62,7 @@ These are other examples that utilise OCaml effect handlers that are not in this
 * [Reactive UI and animation](https://gopiandcode.uk/logs/log-bye-bye-monads-algebraic-effects.html)
 * [Probabilisitic Programming](https://github.com/Arnhav-Datar/EffPPL)
   + and the [project report](https://github.com/Arnhav-Datar/EffPPL/blob/main/reports/final_report/EffPPL_Report.pdf)
-  
+
 ## Citation
 
 If you are citing this work in an academic paper, please cite the PLDI 2021 paper "Retrofitting Effect Handlers onto OCaml": https://dl.acm.org/doi/10.1145/3453483.3454039.

@@ -27,3 +27,8 @@
  (names delimcc)
  (modules delimcc)
  (libraries multicont))
+
+(executables
+ (names dynamic_state)
+ (modules dynamic_state)
+ (libraries multicont))
