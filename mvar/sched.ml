@@ -3,8 +3,7 @@ open Effect.Deep
 
 type _ eff += Fork : (unit -> unit) -> unit eff
 type _ eff += Yield : unit eff
-
-type 'a cont = ('a,unit) continuation
+type 'a cont = ('a, unit) continuation
 type _ eff += Suspend : ('a cont -> unit) -> 'a eff
 type _ eff += Resume : 'a cont * 'a -> unit eff
 
