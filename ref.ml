@@ -14,23 +14,22 @@ open Effect
 open Effect.Deep
 open State
 
-
 (* --------------------------------------------------------------------------- *)
 (** Type Definitions. *)
 
 (* [REF] is the interface of dynamically allocated references. *)
 module type REF = sig
   type 'a t
-  val ref  : 'a -> 'a t
-  val (!)  : 'a t -> 'a
-  val (:=) : 'a t -> 'a -> unit
-  val run  : (unit -> 'a) -> 'a
+
+  val ref : 'a -> 'a t
+  val ( ! ) : 'a t -> 'a
+  val ( := ) : 'a t -> 'a -> unit
+  val run : (unit -> 'a) -> 'a
 end
 
 (* [HEAP] is the type of a functor that, given the implementation of a cell,
    implements dynamically allocated references. *)
-module type HEAP = CELL -> REF
-
+module type HEAP = functor (_ : CELL) -> REF
 
 (* --------------------------------------------------------------------------- *)
 (** Heap Implementation Based on First-Class Modules. *)
@@ -89,7 +88,6 @@ module FCMBasedHeap : HEAP = functor (Cell : CELL) -> struct
        snd (C.run ~init main)
 end
 
-
 (* --------------------------------------------------------------------------- *)
 (** Heap Implementation Based on Records. *)
 
@@ -120,47 +118,43 @@ module RecordBasedHeap : HEAP = functor (Cell : CELL) -> struct
         snd (run ~init (fun _ -> continue k {get; set}))
 end
 
-
 (* --------------------------------------------------------------------------- *)
 (** Examples. *)
 
 open Printf
 
-let _ =
-  printf "Opening module Ref...\n"
+let _ = printf "Opening module Ref...\n"
+let _ = printf "Running tests...\n"
 
 let _ =
-  printf "Running tests...\n"
+  let heaps : (module REF) list =
+    [
+      (module FCMBasedHeap (StPassing));
+      (module RecordBasedHeap (StPassing));
+      (module FCMBasedHeap (LocalMutVar));
+      (module RecordBasedHeap (LocalMutVar));
+      (module FCMBasedHeap (GlobalMutVar));
+      (module RecordBasedHeap (GlobalMutVar));
+    ]
+  in
 
-let _ =
-  let heaps : (module REF) list = [
-    (module FCMBasedHeap(StPassing));
-    (module RecordBasedHeap(StPassing));
-    (module FCMBasedHeap(LocalMutVar));
-    (module RecordBasedHeap(LocalMutVar));
-    (module FCMBasedHeap(GlobalMutVar));
-    (module RecordBasedHeap(GlobalMutVar))
-  ] in
+  List.iter
+    (fun heap ->
+      let open (val heap : REF) in
+      let main () =
+        let fibs = ref [] in
+        let a, b = (ref 0, ref 1) in
+        for _i = 0 to 10 do
+          let fibsv, av, bv = (!fibs, !a, !b) in
+          fibs := av :: fibsv;
+          a := bv;
+          b := av + bv
+        done;
+        let fibsv, av, bv = (!fibs, !a, !b) in
+        assert ((List.hd fibsv, av, bv) = (55, 89, 144))
+      in
+      run main)
+    heaps
 
-  List.iter (fun heap ->
-    let open (val heap : REF) in
-    let main () =
-      let fibs = ref [] in
-      let a, b = ref 0, ref 1 in
-      for _i = 0 to 10 do
-        let fibsv, av, bv = !fibs, !a, !b in
-        fibs := av :: fibsv;
-        a := bv;
-        b := av + bv
-      done;
-      let fibsv, av, bv = !fibs, !a, !b in
-      assert (((List.hd fibsv), av, bv) = (55, 89, 144))
-    in
-    run main
-  ) heaps
-
-let _ =
-  printf "End of tests.\n"
-
-let _ =
-  printf "End of module Ref.\n"
+let _ = printf "End of tests.\n"
+let _ = printf "End of module Ref.\n"

@@ -1,21 +1,21 @@
 module type S = sig
+  type 'a t
   (** MVar type. Represents a data structure with a single hole that can be
       filled with value. *)
-  type 'a t
 
-  (** [create v] allocates a new mvar with the hole filled with value [v]. *)
   val create : 'a -> 'a t
+  (** [create v] allocates a new mvar with the hole filled with value [v]. *)
 
-  (** [create_empty ()] allocates a new mvar with the hole empty. *)
   val create_empty : unit -> 'a t
+  (** [create_empty ()] allocates a new mvar with the hole empty. *)
 
+  val put : 'a -> 'a t -> unit
   (** [put v m] fills mvar [m] with value v. If the mvar is already filled,
       this operation blocks until the hole become empty. *)
-  val put : 'a -> 'a t -> unit
 
+  val take : 'a t -> 'a
   (** [take m] empties the mvar [m] if it is filled and returns the value.
       If [m] is empty, then the operation blocks until the mvar becomes filled. *)
-  val take : 'a t -> 'a
 end
 
 module type SCHED = sig

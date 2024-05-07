@@ -8,8 +8,8 @@ homepage: "https://github.com/ocaml-multicore/effects-examples"
 bug-reports: "https://github.com/ocaml-multicore/effects-examples/issues"
 depends: [
   "dune" {>= "2.9"}
-  "lwt" {>= "5.5.1~alpha-repo"}
-  "multicont" {>= "1.0.0~rc.2"}
+  "lwt" {>= "5.7"}
+  "multicont" {>= "1.0.1"}
   "odoc" {with-doc}
 ]
 build: [

@@ -6,10 +6,11 @@ type bottom
 
 module type TXN = sig
   type 'a t
+
   val atomically : (unit -> unit) -> unit
   val ref : 'a -> 'a t
-  val (!) : 'a t -> 'a
-  val (:=) : 'a t -> 'a -> unit
+  val ( ! ) : 'a t -> 'a
+  val ( := ) : 'a t -> 'a -> unit
 end
 
 module Txn : TXN = struct
@@ -29,24 +30,26 @@ module Txn : TXN = struct
     in comp (fun () -> ())
 
   let ref = ref
-  let (!) = (!)
-  let (:=) = fun r v -> perform (Update (r,v))
+  let ( ! ) = ( ! )
+  let ( := ) r v = perform (Update (r, v))
 end
 
 exception Res of int
 
 open Txn
 
-let () = atomically (fun () ->
-  let r = ref 10 in
-  printf "T0: %d\n" (!r);
-  try atomically (fun () ->
-    r := 20;
-    r := 21;
-    printf "T1: Before abort %d\n" (!r);
-    raise (Res !r) |> ignore;
-    printf "T1: After abort %d\n" (!r);
-    r := 30)
-  with
-  | Res v -> printf "T0: T1 aborted with %d\n" v;
-  printf "T0: %d\n" !r)
+let () =
+  atomically (fun () ->
+      let r = ref 10 in
+      printf "T0: %d\n" !r;
+      try
+        atomically (fun () ->
+            r := 20;
+            r := 21;
+            printf "T1: Before abort %d\n" !r;
+            raise (Res !r) |> ignore;
+            printf "T1: After abort %d\n" !r;
+            r := 30)
+      with Res v ->
+        printf "T0: T1 aborted with %d\n" v;
+        printf "T0: %d\n" !r)

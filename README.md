@@ -1,6 +1,6 @@
 # OCaml effects examples
 
-[![Build Status](https://travis-ci.org/ocaml-multicore/effects-examples.svg?branch=master)](https://travis-ci.org/ocaml-multicore/effects-examples)    
+[![Build Status](https://github.com/ocaml-multicore/effects-examples/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/ocaml-multicore/effects-examples/actions/workflows/ci.yml)
 
 Examples to illustrate the use of algebraic effects in OCaml. See
 * [Effective Concurrency with Algebraic Effects](http://kcsrk.info/ocaml/multicore/2015/05/20/effects-multicore/)
@@ -34,6 +34,7 @@ The original implementation of Multicore OCaml allowed a user to `Obj.clone_cont
 * [Backtracking N-Queens](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/queens.ml)
 * [Memoization](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/memo.ml)
 * [A mathematical game: Nim](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/nim.ml)
+* [Dynamic State](https://github.com/ocaml-multicore/effects-examples/blob/master/multishot/dynamic_state.ml)
 
 ## Running the examples
 
@@ -59,7 +60,7 @@ These are other examples that utilise OCaml effect handlers that are not in this
 * [Reactive UI and animation](https://gopiandcode.uk/logs/log-bye-bye-monads-algebraic-effects.html)
 * [Probabilisitic Programming](https://github.com/Arnhav-Datar/EffPPL)
   + and the [project report](https://github.com/Arnhav-Datar/EffPPL/blob/main/reports/final_report/EffPPL_Report.pdf)
-  
+
 ## Citation
 
 If you are citing this work in an academic paper, please cite the PLDI 2021 paper "Retrofitting Effect Handlers onto OCaml": https://dl.acm.org/doi/10.1145/3453483.3454039.
