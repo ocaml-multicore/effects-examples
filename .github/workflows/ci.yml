@@ -31,6 +31,9 @@ jobs:
             default: https://github.com/ocaml/opam-repository.git
           opam-depext: false
 
+# remove this once there is a new release of multicont
+      - run: opam pin add multicont -y --dev
+
       - run: opam install . --deps-only --with-test
 
       - run: opam exec -- dune build
