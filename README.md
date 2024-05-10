@@ -38,12 +38,12 @@ The original implementation of Multicore OCaml allowed a user to `Obj.clone_cont
 
 ## Running the examples
 
-To run the examples with OCaml, be sure to install [Opam with these instructions](https://opam.ocaml.org/doc/Install.html).
+To run the examples with OCaml, be sure to install [Opam with these instructions](https://opam.ocaml.org/doc/Install.html). These examples use the new effect syntax introduced with OCaml 5.3 and onwards. If you wish to see the examples which used the underlying effect functions directly, please checkout the `5.1.1` tag of this repository instead.
 
 ```bash
-# After cloning this repository, create a 5.1 switch
+# After cloning this repository, create a 5.3 switch
 opam update
-opam switch create 5.1.1
+opam switch create 5.3.0+trunk
 opam install . --deps-only
 ```
 
