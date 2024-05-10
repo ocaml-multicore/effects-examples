@@ -23,7 +23,7 @@ module SameFringe (E : EQUATABLE) = struct
   type nonrec tree = E.t tree
 
   (* Yielding control *)
-  type _ Effect.t += Yield : E.t -> unit Effect.t
+  type _ eff += Yield : E.t -> unit eff
 
   let yield e = perform (Yield e)
 
@@ -40,16 +40,9 @@ module SameFringe (E : EQUATABLE) = struct
 
   (* Reifies `Yield' effects *)
   let step f =
-    match_with f ()
-      {
-        retc = (fun _ -> Done);
-        exnc = (fun e -> raise e);
-        effc =
-          (fun (type a) (e : a Effect.t) ->
-            match e with
-            | Yield e -> Some (fun (k : (a, _) continuation) -> Yielded (e, k))
-            | _ -> None);
-      }
+    match f () with
+    | _ -> Done
+    | effect Yield e, k -> Yielded (e, k)
 
   (* The comparator "step walks" two given trees simultaneously *)
   let comparator ltree rtree =

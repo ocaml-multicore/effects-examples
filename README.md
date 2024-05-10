@@ -38,16 +38,14 @@ The original implementation of Multicore OCaml allowed a user to `Obj.clone_cont
 
 ## Running the examples
 
-To run the examples with Multicore OCaml, be sure to install [Opam with these instructions](https://opam.ocaml.org/doc/Install.html). If your version of Opam (`opam --version`) is greater than or equal to `2.1` then the following instructions will work:
+To run the examples with OCaml, be sure to install [Opam with these instructions](https://opam.ocaml.org/doc/Install.html).
 
 ```bash
-# After cloning this repository, create a 5.1.0 switch
+# After cloning this repository, create a 5.1 switch
 opam update
-# Add the alpha repository to get unreleased 5.1.0 compatible libraries
-opam switch create 5.1.0
+opam switch create 5.1.1
 opam install . --deps-only
 ```
-
 
 Running `make` will build all of the examples. If you want to run a single executable that is built with `dune` you can run:
 

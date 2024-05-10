@@ -13,22 +13,20 @@ let string_of_msg = function
 type pid = int
 (** Process primitives **)
 
-type _ Effect.t += Spawn : (pid -> unit) -> pid Effect.t
-
+type _ eff += Spawn : (pid -> unit) -> pid eff
 let spawn p = perform (Spawn p)
 
-type _ Effect.t += Yield : unit Effect.t
-
+type _ eff += Yield : unit eff
 let yield () = perform Yield
 
 (** Communication primitives **)
-type _ Effect.t += Send : pid * message -> unit Effect.t
+type _ eff += Send : pid * message -> unit eff
 
 let send pid data =
   perform (Send (pid, data));
   yield ()
 
-type _ Effect.t += Recv : pid -> message option Effect.t
+type _ eff += Recv : pid -> message option eff
 
 let rec recv pid =
   match perform (Recv pid) with
@@ -77,23 +75,14 @@ let mailbox f =
     mailbox := mb;
     msg
   in
-  try_with f ()
-    {
-      effc =
-        (fun (type a) (e : a Effect.t) ->
-          match e with
-          | Send (pid, msg) ->
-              Some
-                (fun (k : (a, _) continuation) ->
-                  mailbox := Mailbox.push pid msg !mailbox;
-                  continue k ())
-          | Recv who ->
-              Some
-                (fun k ->
-                  let msg = lookup who in
-                  continue k msg)
-          | _ -> None);
-    }
+  match f () with
+  | v -> v
+  | effect (Send (pid, msg)), k ->
+     mailbox := Mailbox.push pid msg !mailbox;
+     continue k ()
+  | effect (Recv who), k ->
+     let msg = lookup who in
+     continue k msg
 
 (** Process handler
     Slightly modified version of sched.ml **)
@@ -104,25 +93,12 @@ let run main () =
   let pid = ref (-1) in
   let rec spawn f =
     pid := 1 + !pid;
-    match_with f !pid
-      {
-        retc = (fun () -> dequeue ());
-        exnc = (fun e -> raise e);
-        effc =
-          (fun (type a) (e : a Effect.t) ->
-            match e with
-            | Yield ->
-                Some
-                  (fun (k : (a, _) continuation) ->
-                    enqueue (fun () -> continue k ());
-                    dequeue ())
-            | Spawn p ->
-                Some
-                  (fun k ->
-                    enqueue (fun () -> continue k !pid);
-                    spawn p)
-            | _ -> None);
-      }
+    match f !pid with
+    | () -> dequeue ()
+    | effect Yield, k ->
+       enqueue (fun () -> continue k ()); dequeue ()
+    | effect (Spawn p), k ->
+       enqueue (fun () -> continue k !pid); spawn p
   in
   spawn main
 

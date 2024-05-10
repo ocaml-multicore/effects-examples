@@ -25,8 +25,10 @@ module Promise : Promise = struct
 
   type 'a status = Done of 'a | Cancelled of exn | Waiting of tvar list
   type 'a t = 'a status ref
-  type _ Effect.t += Fork : (unit -> 'a) -> 'a t Effect.t
-  type _ Effect.t += Wait : 'a t -> unit Effect.t
+
+  type _ eff +=
+   | Fork : (unit -> 'a) -> 'a t eff
+   | Wait : 'a t -> unit eff
 
   let fork f = perform (Fork f)
   let enqueue run_q k v = Queue.push (fun () -> ignore @@ continue k v) run_q
@@ -103,33 +105,14 @@ module Promise : Promise = struct
   let run main =
     let run_q = Queue.create () in
     let rec spawn : 'a. 'a status ref -> (unit -> 'a) -> unit =
-     fun sr f ->
-      match_with f ()
-        {
-          retc =
-            (fun v ->
-              finish run_q sr v;
-              dequeue run_q);
-          exnc =
-            (fun e ->
-              abort run_q sr e;
-              dequeue run_q);
-          effc =
-            (fun (type a) (e : a Effect.t) ->
-              match e with
-              | Wait sr ->
-                  Some
-                    (fun (k : (a, _) continuation) ->
-                      wait sr k;
-                      dequeue run_q)
-              | Fork f ->
-                  Some
-                    (fun k ->
-                      let sr = mk_status () in
-                      enqueue run_q k sr;
-                      spawn sr f)
-              | _ -> None);
-        }
+      fun sr f ->
+        match f () with
+        | v -> finish run_q sr v; dequeue run_q
+        | exception e -> abort run_q sr e; dequeue run_q
+        | effect (Wait sr), k -> wait sr k; dequeue run_q
+        | effect (Fork f), k ->
+            let sr = mk_status () in
+            enqueue run_q k sr; spawn sr f
     in
     let sr = mk_status () in
     spawn sr main;

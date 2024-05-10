@@ -47,74 +47,46 @@ module type HEAP = functor (_ : CELL) -> REF
    [get] and [set] obtained from a new instance of [Cell].
 *)
 
-module FCMBasedHeap : HEAP =
-functor
-  (Cell : CELL)
-  ->
-  struct
-    (* [EFF] declares a pair of effect names [Get] and [Set]. *)
-    module type EFF = sig
-      type t
-      type _ Effect.t += Get : t Effect.t
-      type _ Effect.t += Set : t -> unit Effect.t
-    end
-
-    (* ['a t] is the type of first-class [EFF] modules.
-       The effect-name declarations in [EFF] become first-class. *)
-    type 'a t = (module EFF with type t = 'a)
-    type _ Effect.t += Ref : 'a -> 'a t Effect.t
-
-    let ref init = perform (Ref init)
-    let ( ! ) : type a. a t -> a = fun (module E) -> perform E.Get
-
-    let ( := ) : type a. a t -> a -> unit =
-     fun (module E) y -> perform (E.Set y)
-
-    (* [fresh()] allocates fresh effect names [Get] and [Set],
-        and packs these names into a first-class module. *)
-    let fresh (type a) () : a t =
-      (module struct
-        type t = a
-        type _ Effect.t += Get : t Effect.t
-        type _ Effect.t += Set : t -> unit Effect.t
-      end)
-
-    let run main =
-      try_with main ()
-        {
-          effc =
-            (fun (type b) (e : b Effect.t) ->
-              match e with
-              | Ref init ->
-                  Some
-                    (fun (k : (b, _) continuation) ->
-                      (init, k)
-                      |>
-                      fun (type a) ((init, k) : a * (a t, _) continuation) ->
-                        let module E = (val (fresh () : a t)) in
-                        let module C = Cell (struct
-                          type t = a
-                        end) in
-                        let main () =
-                          try_with (continue k)
-                            (module E)
-                            {
-                              effc =
-                                (fun (type c) (e : c Effect.t) ->
-                                  match e with
-                                  | E.Get ->
-                                      Some
-                                        (fun (k : (c, _) continuation) ->
-                                          continue k (C.get () : a))
-                                  | E.Set y ->
-                                      Some (fun k -> continue k (C.set y))
-                                  | _ -> None);
-                            }
-                        in
-                        snd (C.run ~init main))
-              | _ -> None);
-        }
+module FCMBasedHeap : HEAP = functor (Cell : CELL) -> struct
+  (* [EFF] declares a pair of effect names [Get] and [Set]. *)
+  module type EFF = sig
+    type t
+    type _ eff += Get : t eff | Set : t -> unit eff
   end
+  (* ['a t] is the type of first-class [EFF] modules.
+     The effect-name declarations in [EFF] become first-class. *)
+  type 'a t = (module EFF with type t = 'a)
+
+  type _ eff += Ref : 'a -> ('a t) eff
+
+  let ref init = perform (Ref init)
+  let (!) : type a. a t -> a =
+    fun (module E) -> perform E.Get
+  let (:=) : type a. a t -> a -> unit =
+    fun (module E) y -> perform (E.Set y)
+
+  (* [fresh()] allocates fresh effect names [Get] and [Set],
+      and packs these names into a first-class module. *)
+  let fresh (type a) () : a t =
+    (module struct
+      type t = a
+      type _ eff += Get : t eff | Set : t -> unit eff
+    end)
+
+  let run main =
+   try main () with
+     effect (Ref init), k ->
+       (* trick to name the existential type introduced by the matching: *)
+       (init, k) |> fun (type a) (init, k : a * (a t, _) continuation) ->
+       let module E = (val (fresh (): a t)) in
+       let module C = Cell(struct type t = a end) in
+       let main () =
+         try continue k (module E) with
+         | effect E.Get, k -> continue k (C.get() : a)
+         | effect (E.Set y), k -> continue k (C.set y)
+       in
+       snd (C.run ~init main)
+end
 
 (* --------------------------------------------------------------------------- *)
 (** Heap Implementation Based on Records. *)
@@ -127,37 +99,24 @@ functor
    by this new cell.
 *)
 
-module RecordBasedHeap : HEAP =
-functor
-  (Cell : CELL)
-  ->
-  struct
-    type 'a t = { get : unit -> 'a; set : 'a -> unit }
-    type _ Effect.t += Ref : 'a -> 'a t Effect.t
+module RecordBasedHeap : HEAP = functor (Cell : CELL) -> struct
+  type 'a t = {
+    get : unit -> 'a;
+    set : 'a -> unit;
+  }
+  type _ eff += Ref : 'a -> 'a t eff
 
-    let ref init = perform (Ref init)
-    let ( ! ) { get; _ } = get ()
-    let ( := ) { set; _ } y = set y
+  let ref init = perform (Ref init)
+  let (!) {get; _} = get()
+  let (:=) {set; _} y = set y
 
-    let run main =
-      try_with main ()
-        {
-          effc =
-            (fun (type b) (e : b Effect.t) ->
-              match e with
-              | Ref init ->
-                  Some
-                    (fun (k : (b, _) continuation) ->
-                      (init, k)
-                      |>
-                      fun (type a) ((init, k) : a * (a t, _) continuation) ->
-                        let open Cell (struct
-                          type t = a
-                        end) in
-                        snd (run ~init (fun _ -> continue k { get; set })))
-              | _ -> None);
-        }
-  end
+  let run main =
+    try main () with
+    | effect (Ref init), k ->
+        (init, k) |> fun (type a) ((init, k) : a * (a t, _) continuation) ->
+        let open Cell(struct type t = a end) in
+        snd (run ~init (fun _ -> continue k {get; set}))
+end
 
 (* --------------------------------------------------------------------------- *)
 (** Examples. *)

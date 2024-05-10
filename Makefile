@@ -1,7 +1,7 @@
 EXE := concurrent.exe ref.exe transaction.exe echo.exe \
 	dyn_wind.exe generator.exe promises.exe reify_reflect.exe \
 	MVar_test.exe chameneos.exe eratosthenes.exe pipes.exe loop.exe \
-	fringe.exe algorithmic_differentiation.exe
+	fringe.exe algorithmic_differentiation.exe dynamic_state.exe
 
 all: $(EXE)
 

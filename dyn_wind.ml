@@ -6,47 +6,27 @@ open Effect.Deep
 let dynamic_wind before_thunk thunk after_thunk =
   before_thunk ();
   let res =
-    match_with thunk ()
-      {
-        retc = Fun.id;
-        exnc =
-          (fun e ->
-            after_thunk ();
-            raise e);
-        effc =
-          (fun (type a) (e : a Effect.t) ->
-            Some
-              (fun (k : (a, _) continuation) ->
-                after_thunk ();
-                let res' = perform e in
-                before_thunk ();
-                continue k res'));
-      }
+    match thunk () with
+    | v -> v
+    | exception e -> after_thunk (); raise e
+    | effect e, k ->
+        after_thunk ();
+        let res' = perform e in
+        before_thunk ();
+        continue k res'
   in
   after_thunk ();
   res
 
-type _ Effect.t += E : unit Effect.t
+type _ eff += E : unit eff
 
 let () =
   let bt () = Printf.printf "IN\n" in
   let at () = Printf.printf "OUT\n" in
   let foo () =
-    Printf.printf "peform E\n";
-    perform E;
-    Printf.printf "peform E\n";
-    perform E;
+    Printf.printf "perform E\n"; perform E;
+    Printf.printf "perform E\n"; perform E;
     Printf.printf "done\n"
   in
-  try_with (dynamic_wind bt foo) at
-    {
-      effc =
-        (fun (type a) (e : a Effect.t) ->
-          match e with
-          | E ->
-              Some
-                (fun (k : (a, _) continuation) ->
-                  Printf.printf "handled E\n";
-                  continue k ())
-          | _ -> None);
-    }
+  try dynamic_wind bt foo at with
+  | effect E, k -> Printf.printf "handled E\n"; continue k ()

@@ -9,8 +9,8 @@ end
 
 module type SCHED = sig
   type 'a cont
-  type _ Effect.t += Suspend : ('a cont -> unit) -> 'a Effect.t
-  type _ Effect.t += Resume : ('a cont * 'a) -> unit Effect.t
+  type _ eff += Suspend : ('a cont -> unit) -> 'a eff
+  type _ eff += Resume : 'a cont * 'a -> unit eff
 end
 
 module Make (S : SCHED) : S = struct
