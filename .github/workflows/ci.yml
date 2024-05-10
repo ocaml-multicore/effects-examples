@@ -15,7 +15,7 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - ocaml-base-compiler.5.3.0+trunk
+          - ocaml-variants.5.3.0+trunk
 
     runs-on: ${{ matrix.os }}
 
@@ -30,6 +30,9 @@ jobs:
           opam-repositories: |
             default: https://github.com/ocaml/opam-repository.git
           opam-depext: false
+
+# remove this once there is a new release of multicont
+      - run: opam pin add multicont -y --dev
 
       - run: opam install . --deps-only --with-test
 
