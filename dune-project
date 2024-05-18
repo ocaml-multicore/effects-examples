@@ -10,4 +10,4 @@
  (description "A collection of example programs using effects in OCaml 5")
  (depends
    (lwt (>= "5.7"))
-   (multicont (>= "1.0.1"))))
+   (multicont (>= "1.0.3"))))
