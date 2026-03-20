@@ -13,7 +13,7 @@ let rec safe queen diag xs =
       && queen <> q - diag
       && safe queen (diag + 1) qs
 
-type _ Effect.t += Pick : int -> int Effect.t
+type _ eff += Pick : int -> int eff
 
 exception Fail
 
@@ -25,46 +25,30 @@ let rec find_solution n col : int list =
     if safe queen 1 sol then queen :: sol else raise Fail
 
 let queens_count n =
-  match_with (find_solution n) n
-    {
-      retc = (fun _ -> 1);
-      exnc = (function Fail -> 0 | e -> raise e);
-      effc =
-        (fun (type a) (e : a Effect.t) ->
-          match e with
-          | Pick n ->
-              Some
-                (fun (k : (a, _) continuation) ->
-                  let rec loop i acc =
-                    if i = n then continue k i + acc
-                    else
-                      loop (i + 1)
-                        (continue (Multicont.Deep.clone_continuation k) i + acc)
-                  in
-                  loop 1 0)
-          | _ -> None);
-    }
+  match find_solution n n with
+  | _ -> 1
+  | exception Fail -> 0
+  | effect (Pick n), k ->
+      let rec loop i acc =
+        if i = n then continue k i + acc
+        else
+          loop (i + 1)
+            (continue (Multicont.Deep.clone_continuation k) i + acc)
+      in
+      loop 1 0
 
 let queens_choose n =
-  match_with (find_solution n) n
-    {
-      retc = (fun x -> [ x ]);
-      exnc = (function Fail -> [] | e -> raise e);
-      effc =
-        (fun (type a) (e : a Effect.t) ->
-          match e with
-          | Pick n ->
-              Some
-                (fun (k : (a, _) continuation) ->
-                  let rec loop i acc : int list list =
-                    if i = 1 then continue k i @ acc
-                    else
-                      loop (i - 1)
-                        (continue (Multicont.Deep.clone_continuation k) i @ acc)
-                  in
-                  loop n [])
-          | _ -> None);
-    }
+  match find_solution n n with
+  | x -> [ x ]
+  | exception Fail -> []
+  | effect (Pick n), k ->
+      let rec loop i acc : int list list =
+        if i = 1 then continue k i @ acc
+        else
+          loop (i - 1)
+            (continue (Multicont.Deep.clone_continuation k) i @ acc)
+      in
+      loop n []
 
 let print_all_solutions () =
   let sols = queens_choose n in

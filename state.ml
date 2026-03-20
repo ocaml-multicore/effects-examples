@@ -184,20 +184,10 @@ module StPassing : CELL = functor (T : TYPE) -> struct
   let set y = perform (Set y)
 
   let run (type a) ~init (main : unit -> a) : t * a =
-    (* In this case the lower-level syntax is less verbose
-       since we have to rebind the existentials anyway if using
-       the concrete effect syntax. *)
-    match_with main () {
-      retc = (fun res x -> (x, res));
-      exnc = raise;
-      effc = fun (type b) (e : b eff) ->
-        match e with
-        | Get -> Some (fun (k : (b, t -> (t * a)) continuation) ->
-            fun (x : t) -> continue k x x)
-        | Set y -> Some (fun k ->
-            fun (_x : t) -> continue k () y)
-        | _ -> None
-    } init
+    (match main () with
+     | res -> fun x -> (x, res)
+     | effect Get, k -> fun (x : t) -> continue k x x
+     | effect (Set y), k -> fun (_x : t) -> continue k () y) init
 end
 
 (* --------------------------------------------------------------------------- *)

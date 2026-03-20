@@ -25,7 +25,7 @@ let string_of_player = function Alice -> "Alice" | Bob -> "Bob"
 (* The [move] operation is centric to the game. The operation is
    parameterised by the active player and the number of sticks left in
    the game. *)
-type _ Effect.t += Move : (player * int) -> int Effect.t
+type _ eff += Move : (player * int) -> int eff
 
 let move p n = perform (Move (p, n))
 
@@ -40,14 +40,9 @@ let game n () = alice_turn n
 
 (** Encoding player strategies **)
 let strategy (s : player -> int -> (int, player) continuation -> player) m =
-  try_with m ()
-    {
-      effc =
-        (fun (type a) (e : a Effect.t) ->
-          match e with
-          | Move (p, n) -> Some (fun (k : (a, player) continuation) -> s p n k)
-          | _ -> None);
-    }
+  match m () with
+  | x -> x
+  | effect (Move (p, n)), k -> s p n k
 
 (* Simple (and naive) strategy *)
 let ns _ k = continue k 1
@@ -131,16 +126,9 @@ let reify p n k =
   Take (p, subtrees)
 
 let gametree m =
-  match_with m ()
-    {
-      retc = (fun v -> Winner v);
-      exnc = (fun e -> raise e);
-      effc =
-        (fun (type a) (e : a Effect.t) ->
-          match e with
-          | Move (p, n) -> Some (fun (k : (a, _) continuation) -> reify p n k)
-          | _ -> None);
-    }
+  match m () with
+  | v -> Winner v
+  | effect (Move (p, n)), k -> reify p n k
 
 (* We model Cheat as an exception parameterised by the player (the
    cheater) and the number of sticks the player took *)
@@ -162,15 +150,9 @@ let check_move p n k =
   else continue k m
 
 let checker m =
-  try_with m ()
-    {
-      effc =
-        (fun (type a) (e : a Effect.t) ->
-          match e with
-          | Move (p, n) ->
-              Some (fun (k : (a, _) continuation) -> check_move p n k)
-          | _ -> None);
-    }
+  match m () with
+  | x -> x
+  | effect (Move (p, n)), k -> check_move p n k
 
 (* The following exception handler reports cheaters *)
 let cheat_report m =
@@ -189,24 +171,16 @@ let cheat_lose m =
 let ( -<- ) h g m = h (fun () -> g m)
 
 (** Choosing between strategies **)
-type _ Effect.t += Choose : bool Effect.t
+type _ eff += Choose : bool eff
 
 let choose () = perform Choose
 
 (* Flip a coin to decide whether to interpret Choose as true or
    false *)
 let coin m =
-  try_with m ()
-    {
-      effc =
-        (fun (type a) (e : a Effect.t) ->
-          match e with
-          | Choose ->
-              Some
-                (fun (k : (a, _) continuation) ->
-                  continue k (Random.float 1.0 > 0.5))
-          | _ -> None);
-    }
+  match m () with
+  | x -> x
+  | effect Choose, k -> continue k (Random.float 1.0 > 0.5)
 
 let bob_maybe_cheats m =
   let h =
@@ -234,30 +208,20 @@ module State (S : sig
   type t
 end) : STATE with type t = S.t = struct
   type t = S.t
-  type _ Effect.t += Put : t -> unit Effect.t
+  type _ eff += Put : t -> unit eff
 
   let put v = perform (Put v)
 
-  type _ Effect.t += Get : t Effect.t
+  type _ eff += Get : t eff
 
   let get () = perform Get
 
   let run (type a) (f : unit -> a) ~init : a =
     let comp =
-      match_with f ()
-        {
-          retc = (fun x s -> (s, x));
-          exnc = (fun e -> raise e);
-          effc =
-            (fun (type b) (e : b Effect.t) ->
-              match e with
-              | Get ->
-                  Some
-                    (fun (k : (b, t -> t * a) continuation) (s : t) ->
-                      continue k s s)
-              | Put s' -> Some (fun k _s -> continue k () s')
-              | e -> None);
-        }
+      match f () with
+      | x -> fun s -> (s, x)
+      | effect Get, k -> fun (s : S.t) -> continue k s s
+      | effect (Put s'), k -> fun _s -> continue k () s'
     in
     snd @@ comp init
 end

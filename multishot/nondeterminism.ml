@@ -6,7 +6,7 @@ open Effect.Deep
 
 (* Non-determinism is an effect given by an operation Choose, that
    returns a boolean. *)
-type _ Effect.t += Choose : bool Effect.t
+type _ eff += Choose : bool eff
 
 let choose () = perform Choose
 
@@ -17,14 +17,9 @@ let toss () = if choose () then Heads else Tails
 
 (* Fixed interpretations *)
 let make_charged_handler (b : bool) m =
-  try_with m ()
-    {
-      effc =
-        (fun (type a) (e : a Effect.t) ->
-          match e with
-          | Choose -> Some (fun (k : (a, _) continuation) -> continue k b)
-          | _ -> None);
-    }
+  match m () with
+  | x -> x
+  | effect Choose, k -> continue k b
 
 let positive = make_charged_handler true (* always interpret as true *)
 let negative = make_charged_handler false (* always interpret as false *)
@@ -32,20 +27,11 @@ let negative = make_charged_handler false (* always interpret as false *)
 (* [all_results] enumerates every possible outcome of a
    non-deterministic computation *)
 let all_results m =
-  match_with m ()
-    {
-      retc = (fun v -> [ v ]);
-      exnc = raise;
-      effc =
-        (fun (type a) (e : a Effect.t) ->
-          match e with
-          | Choose ->
-              Some
-                (fun (k : (a, _) continuation) ->
-                  continue k true
-                  @ continue (Multicont.Deep.clone_continuation k) false)
-          | _ -> None);
-    }
+  match m () with
+  | v -> [ v ]
+  | effect Choose, k ->
+      continue k true
+      @ continue (Multicont.Deep.clone_continuation k) false
 
 (* OCaml effects/multicore only supports single-shot
    continuations. But, we can simulate multi-shot continuations by
@@ -53,17 +39,9 @@ let all_results m =
 
 (* Random interpretation *)
 let coin m =
-  try_with m ()
-    {
-      effc =
-        (fun (type a) (e : a Effect.t) ->
-          match e with
-          | Choose ->
-              Some
-                (fun (k : (a, _) continuation) ->
-                  continue k (Random.float 1.0 > 0.5))
-          | _ -> None);
-    }
+  match m () with
+  | x -> x
+  | effect Choose, k -> continue k (Random.float 1.0 > 0.5)
 
 (* Another example: A drunken coin toss. A drunkard may fail to catch
    the coin. *)

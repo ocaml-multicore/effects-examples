@@ -22,16 +22,16 @@ module LocalState (R : sig
 end) =
 struct
   type reff = R.t
-  type _ Effect.t += New : int -> R.t Effect.t
-  type _ Effect.t += Get : R.t -> int Effect.t
-  type _ Effect.t += Put : R.t * int -> unit Effect.t
+  type _ eff += New : int -> R.t eff
+  type _ eff += Get : R.t -> int eff
+  type _ eff += Put : R.t * int -> unit eff
 end
 
 module type StateOps = sig
   type reff
-  type _ Effect.t += New : int -> reff Effect.t
-  type _ Effect.t += Get : reff -> int Effect.t
-  type _ Effect.t += Put : reff * int -> unit Effect.t
+  type _ eff += New : int -> reff eff
+  type _ eff += Get : reff -> int eff
+  type _ eff += Put : reff * int -> unit eff
 end
 
 (**********************************************************************)
@@ -43,27 +43,16 @@ let run main =
   let module S = LocalState (Int) in
   let module IM = Map.Make (Int) in
   let comp =
-    try_with main
-      (module Int : Type)
-      {
-        effc =
-          (fun (type a) (e : a Effect.t) ->
-            match e with
-            | S.Put (r, i) ->
-                Some
-                  (fun (k : (a, _) continuation) s ->
-                    continue k () (IM.add r i s))
-            | S.Get r ->
-                Some
-                  (fun (k : (a, _) continuation) s ->
-                    continue k (IM.find r s) s)
-            | S.New i ->
-                Some
-                  (fun (k : (a, _) continuation) s ->
-                    let r = fst (IM.max_binding s) + 1 in
-                    continue k r (IM.add r i s))
-            | _ -> None);
-      }
+    match main (module Int : Type) with
+    | x -> fun _s -> x
+    | effect (S.Put (r, i)), k ->
+        fun s -> continue k () (IM.add r i s)
+    | effect (S.Get r), k ->
+        fun s -> continue k (IM.find r s) s
+    | effect (S.New i), k ->
+        fun s ->
+          let r = fst (IM.max_binding s) + 1 in
+          continue k r (IM.add r i s)
   in
   comp IM.empty
 
@@ -80,29 +69,18 @@ let run2 main =
   let module S = LocalState (Int) in
   let module IM = Map.Make (Int) in
   let comp =
-    try_with main
-      (module S : StateOps)
-      {
-        effc =
-          (fun (type a) (e : a Effect.t) ->
-            match e with
-            | S.Put (r, i) ->
-                Some
-                  (fun (k : (a, _) continuation) s ->
-                    continue k () (IM.add r i s))
-            | S.Get r ->
-                Some
-                  (fun (k : (a, _) continuation) s ->
-                    continue k (IM.find r s) s)
-            | S.New i ->
-                Some
-                  (fun (k : (a, _) continuation) s ->
-                    let r =
-                      if IM.is_empty s then 0 else fst (IM.max_binding s) + 1
-                    in
-                    continue k r (IM.add r i s))
-            | _ -> None);
-      }
+    match main (module S : StateOps) with
+    | x -> fun _s -> x
+    | effect (S.Put (r, i)), k ->
+        fun s -> continue k () (IM.add r i s)
+    | effect (S.Get r), k ->
+        fun s -> continue k (IM.find r s) s
+    | effect (S.New i), k ->
+        fun s ->
+          let r =
+            if IM.is_empty s then 0 else fst (IM.max_binding s) + 1
+          in
+          continue k r (IM.add r i s)
   in
   comp IM.empty
 
@@ -118,8 +96,8 @@ let main2 (module S : StateOps) =
 *)
 module type GetPutOps = sig
   type t
-  type _ Effect.t += Get : t Effect.t
-  type _ Effect.t += Put : t -> unit Effect.t
+  type _ eff += Get : t eff
+  type _ eff += Put : t -> unit eff
 end
 
 module MakeGetPut
@@ -129,26 +107,17 @@ module MakeGetPut
     () =
 struct
   type t = T.t
-  type _ Effect.t += Get : t Effect.t
-  type _ Effect.t += Put : t -> unit Effect.t
+  type _ eff += Get : t eff
+  type _ eff += Put : t -> unit eff
 end
 
 let run3 (type a) (module S : GetPutOps with type t = a) (s : a) main =
   let module IM = Map.Make (Int) in
   let comp =
-    match_with main ()
-      {
-        retc = (fun s _ -> s);
-        exnc = (fun e -> raise e);
-        effc =
-          (fun (type a) (e : a Effect.t) ->
-            match e with
-            | S.Get ->
-                Some (fun (k : (a, _) continuation) (s : S.t) -> continue k s s)
-            | S.Put i ->
-                Some (fun (k : (a, _) continuation) s -> continue k () i)
-            | _ -> None);
-      }
+    match main () with
+    | x -> fun _s -> x
+    | effect S.Get, k -> fun (s : S.t) -> continue k s s
+    | effect (S.Put i), k -> fun _s -> continue k () i
   in
   comp s
 
@@ -207,8 +176,8 @@ type 'a reff =
   ; put : 'a -> unit
   ; internals : (module GetPutOps with type t = 'a) >
 
-type _ Effect.t += New : 'a -> 'a reff t
-type _ Effect.t += Choice : bool t
+type _ eff += New : 'a -> 'a reff eff
+type _ eff += Choice : bool eff
 
 let run4 main =
   let donew : type a b. (a reff, b) continuation -> a -> b =
@@ -227,34 +196,18 @@ let run4 main =
         method internals = (module Ops : GetPutOps with type t = a)
       end
     in
-    match_with (continue k) cell
-      {
-        retc = (fun s _ -> s);
-        exnc = (fun e -> raise e);
-        effc =
-          (fun (type c) (e : c t) ->
-            match e with
-            | Ops.Put v ->
-                Some (fun (k : (c, _) continuation) _ -> continue k () v)
-            | Ops.Get ->
-                Some (fun (k : (c, _) continuation) (s : a) -> continue k s s)
-            | _ -> None);
-      }
+    (match continue k cell with
+     | x -> fun (_s : a) -> x
+     | effect (Ops.Put v), k -> fun (_s : a) -> continue k () v
+     | effect Ops.Get, k -> fun (s : a) -> continue k s s)
   in
-  try_with main ()
-    {
-      effc =
-        (fun (type a) (e : a t) ->
-          match e with
-          | New v -> Some (fun (k : (a, _) continuation) -> donew k v)
-          | Choice ->
-              Some
-                (fun (k : (a, _) continuation) ->
-                  let k' = Multicont.Deep.clone_continuation k in
-                  continue k true;
-                  continue k' false)
-          | _ -> None);
-    }
+  match main () with
+  | x -> x
+  | effect (New v), k -> donew k v
+  | effect Choice, k ->
+      let k' = Multicont.Deep.clone_continuation k in
+      continue k true;
+      continue k' false
 
 let newref i = perform (New i)
 let ( := ) r x = r#put x

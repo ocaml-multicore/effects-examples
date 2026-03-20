@@ -12,35 +12,20 @@ let run main =
   let enqueue t v = Queue.push (fun () -> continue t v) run_q in
   let dequeue () = if Queue.is_empty run_q then () else Queue.pop run_q () in
   let rec spawn f =
-    match_with f ()
-      {
-        retc = dequeue;
-        exnc = raise;
-        effc =
-          (fun (type a) (e : a Effect.t) ->
-            match e with
-            | Yield ->
-                Some
-                  (fun (k : (a, _) continuation) ->
-                    enqueue k ();
-                    dequeue ())
-            | Fork f ->
-                Some
-                  (fun k ->
-                    enqueue k ();
-                    spawn f)
-            | Suspend f ->
-                Some
-                  (fun k ->
-                    f k;
-                    dequeue ())
-            | Resume (k', v) ->
-                Some
-                  (fun k ->
-                    enqueue k' v;
-                    ignore (continue k ()))
-            | _ -> None);
-      }
+    match f () with
+    | () -> dequeue ()
+    | effect Yield, k ->
+        enqueue k ();
+        dequeue ()
+    | effect (Fork f), k ->
+        enqueue k ();
+        spawn f
+    | effect (Suspend f), k ->
+        f k;
+        dequeue ()
+    | effect (Resume (k', v)), k ->
+        enqueue k' v;
+        ignore (continue k ())
   in
   spawn main
 

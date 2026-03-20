@@ -1,11 +1,10 @@
-name: main
+name: Build
 
 on:
-  pull_request:
   push:
-  schedule:
-    # Prime the caches every Monday
-    - cron: 0 1 * * MON
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -15,21 +14,19 @@ jobs:
           - ubuntu-latest
           - macos-latest
         ocaml-compiler:
-          - "5.4.1"
+          - 5.4
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v2
+        uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
-          opam-repositories: |
-            default: https://github.com/ocaml/opam-repository.git
-          opam-depext: false
+          dune-cache: true
 
       - run: opam install . --deps-only --with-test
 

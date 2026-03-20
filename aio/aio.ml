@@ -11,16 +11,16 @@ open Effect.Deep
 type file_descr = Unix.file_descr
 type sockaddr = Unix.sockaddr
 type msg_flag = Unix.msg_flag
-type _ Effect.t += Fork : (unit -> unit) -> unit Effect.t
-type _ Effect.t += Accept : file_descr -> (file_descr * sockaddr) Effect.t
+type _ eff += Fork : (unit -> unit) -> unit eff
+type _ eff += Accept : file_descr -> (file_descr * sockaddr) eff
 
-type _ Effect.t +=
-  | Recv : file_descr * bytes * int * int * msg_flag list -> int Effect.t
+type _ eff +=
+  | Recv : file_descr * bytes * int * int * msg_flag list -> int eff
 
-type _ Effect.t +=
-  | Send : file_descr * bytes * int * int * msg_flag list -> int Effect.t
+type _ eff +=
+  | Send : file_descr * bytes * int * int * msg_flag list -> int eff
 
-type _ Effect.t += Sleep : float -> unit Effect.t
+type _ eff += Sleep : float -> unit eff
 
 let fork f = perform (Fork f)
 let accept fd = perform (Accept fd)
@@ -151,56 +151,39 @@ and perform_io st timeout =
 let run main =
   let st = init () in
   let rec fork st f =
-    match_with f ()
-      {
-        retc = (fun () -> schedule st);
-        exnc =
-          (fun exn ->
-            print_string (Printexc.to_string exn);
-            schedule st);
-        effc =
-          (fun (type a) (e : a Effect.t) ->
-            match e with
-            | Fork f ->
-                Some
-                  (fun (k : (a, _) continuation) ->
-                    enqueue_thread st k ();
-                    fork st f)
-            | Accept fd ->
-                Some
-                  (fun k ->
-                    if poll_rd fd then
-                      let res = Unix.accept fd in
-                      continue k res
-                    else (
-                      block_accept st fd k;
-                      schedule st))
-            | Recv (fd, buf, pos, len, mode) ->
-                Some
-                  (fun k ->
-                    if poll_rd fd then
-                      let res = Unix.recv fd buf pos len mode in
-                      continue k res
-                    else (
-                      block_recv st fd buf pos len mode k;
-                      schedule st))
-            | Send (fd, buf, pos, len, mode) ->
-                Some
-                  (fun k ->
-                    if poll_wr fd then
-                      let res = Unix.send fd buf pos len mode in
-                      continue k res
-                    else (
-                      block_send st fd buf pos len mode k;
-                      schedule st))
-            | Sleep t ->
-                Some
-                  (fun k ->
-                    if t <= 0. then continue k ()
-                    else (
-                      block_sleep st t k;
-                      schedule st))
-            | _ -> None);
-      }
+    match f () with
+    | () -> schedule st
+    | exception exn ->
+        print_string (Printexc.to_string exn);
+        schedule st
+    | effect (Fork f), k ->
+        enqueue_thread st k ();
+        fork st f
+    | effect (Accept fd), k ->
+        if poll_rd fd then
+          let res = Unix.accept fd in
+          continue k res
+        else (
+          block_accept st fd k;
+          schedule st)
+    | effect (Recv (fd, buf, pos, len, mode)), k ->
+        if poll_rd fd then
+          let res = Unix.recv fd buf pos len mode in
+          continue k res
+        else (
+          block_recv st fd buf pos len mode k;
+          schedule st)
+    | effect (Send (fd, buf, pos, len, mode)), k ->
+        if poll_wr fd then
+          let res = Unix.send fd buf pos len mode in
+          continue k res
+        else (
+          block_send st fd buf pos len mode k;
+          schedule st)
+    | effect (Sleep t), k ->
+        if t <= 0. then continue k ()
+        else (
+          block_sleep st t k;
+          schedule st)
   in
   fork st main

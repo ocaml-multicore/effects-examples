@@ -26,7 +26,7 @@ module Memo : sig
    * memoized function without establishing a cut is an error.
    *)
 end = struct
-  type _ Effect.t += Cut : unit Effect.t
+  type _ eff += Cut : unit eff
 
   let cut () = perform Cut
 
@@ -35,33 +35,26 @@ end = struct
   let memoize f =
     let cache = ref None in
     fun x ->
-      try_with
-        (fun () ->
-          match !cache with
-          | Some { input; cont } when x = input -> cont ()
-          | _ ->
-              let err_msg = "Memoized function was not cut" in
-              cache := Some { input = x; cont = (fun () -> failwith err_msg) };
-              f x)
-        ()
-        {
-          effc =
-            (fun (type a) (e : a Effect.t) ->
-              match e with
-              | Cut ->
-                  Some
-                    (fun (k : (a, _) continuation) ->
-                      match !cache with
-                      | Some c ->
-                          let rec save_cont k () =
-                            c.cont <-
-                              save_cont (Multicont.Deep.clone_continuation k);
-                            continue k ()
-                          in
-                          save_cont k ()
-                      | None -> failwith "impossible")
-              | _ -> None);
-        }
+      let comp () =
+        match !cache with
+        | Some { input; cont } when x = input -> cont ()
+        | _ ->
+            let err_msg = "Memoized function was not cut" in
+            cache := Some { input = x; cont = (fun () -> failwith err_msg) };
+            f x
+      in
+      match comp () with
+      | x -> x
+      | effect Cut, k ->
+          (match !cache with
+           | Some c ->
+               let rec save_cont k () =
+                 c.cont <-
+                   save_cont (Multicont.Deep.clone_continuation k);
+                 continue k ()
+               in
+               save_cont k ()
+           | None -> failwith "impossible")
 end
 
 let print_succ x =
